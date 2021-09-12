@@ -14,6 +14,10 @@ router.get('/manage-election', (req, res) => {
   res.render('manage_election')
 })
 
+router.get('/election', (req, res) => {
+  res.render('admin_election')
+})
+
 router.get('/another-route', (req, res) => {
   // router code here
 })
