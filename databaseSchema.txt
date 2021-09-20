@@ -1,0 +1,43 @@
+// Admin 
+CREATE TABLE `wedecide`.`admin` ( 
+    `id` INT(11) NULL AUTO_INCREMENT , 
+    `name` VARCHAR(50) NOT NULL , 
+    `username` VARCHAR(50) NOT NULL , 
+    `email` VARCHAR(100) NOT NULL , 
+    `password` VARCHAR(25) NOT NULL , 
+    PRIMARY KEY (`id`), 
+    UNIQUE `username` (`username`), 
+    UNIQUE `ind_email` (`email`)) 
+    ENGINE = InnoDB;
+
+// Election
+CREATE TABLE `wedecide`.`election` ( 
+    `id` INT(11) NOT NULL AUTO_INCREMENT , 
+    `admin_id` INT(11) NOT NULL , 
+    `name` VARCHAR(250) NOT NULL , 
+    `price` VARCHAR(10) NOT NULL DEFAULT '0' , 
+    `start_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , 
+    `end_date` DATETIME NOT NULL , 
+    `reg_start_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , 
+    `reg_end_date` DATETIME NOT NULL , 
+    `description` VARCHAR(300) NOT NULL , 
+    PRIMARY KEY (`id`), 
+    UNIQUE `ind_elect_name` (`name`)) 
+    ENGINE = InnoDB;
+
+// Poll
+CREATE TABLE `wedecide`.`poll` ( 
+    `id` INT(11) NOT NULL AUTO_INCREMENT , 
+    `election_id` INT(11) NOT NULL , 
+    `name` VARCHAR(100) NOT NULL , 
+    PRIMARY KEY (`id`)) 
+    ENGINE = InnoDB;
+
+// Candidate
+CREATE TABLE `wedecide`.`candidate` ( 
+    `id` INT(11) NOT NULL AUTO_INCREMENT , 
+    `poll_id` INT(11) NOT NULL , 
+    `name` VARCHAR(150) NOT NULL , 
+    `vote` VARCHAR(100) NOT NULL , 
+    PRIMARY KEY (`id`)) 
+    ENGINE = InnoDB;
