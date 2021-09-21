@@ -1,12 +1,21 @@
 const config = require('../config')
 const mysql = require('mysql')
 
+// const con = mysql.createConnection({
+//   host: config.HOST,
+//   port: config.DB_PORT,
+//   user: 'admin',
+//   password: config.PASSWORD,
+//   database: config.DATABASE,
+//   multipleStatements: true,
+// })
+
 const con = mysql.createConnection({
-  host: config.HOST,
-  port: config.DB_PORT,
+  host: 'mysql-51328-0.cloudclusters.net',
+  port: 18842,
   user: 'admin',
-  password: config.PASSWORD,
-  database: config.DATABASE,
+  password: '81BvRcSq',
+  database: 'wedecide',
   multipleStatements: true,
 })
 
