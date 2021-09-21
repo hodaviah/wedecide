@@ -5,6 +5,7 @@ const session = require('express-session')
 const cookieParser = require('cookie-parser')
 
 const db = require('./database/confix')
+const config = require('./config')
 
 app.use(cookieParser())
 app.set('view engine', 'ejs')
@@ -61,6 +62,6 @@ app.use((req, res, next) => {
 })
 
 // Port
-app.listen(5000, () => {
+app.listen(config.PORT, () => {
   console.log(`This Webapp is available on the right port...`)
 })
