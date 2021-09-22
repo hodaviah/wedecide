@@ -4,7 +4,7 @@ const mysql = require('mysql')
 // const con = mysql.createConnection({
 //   host: config.HOST,
 //   port: config.DB_PORT,
-//   user: 'admin',
+//   user: 'root',
 //   password: config.PASSWORD,
 //   database: config.DATABASE,
 //   multipleStatements: true,

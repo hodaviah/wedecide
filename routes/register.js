@@ -18,17 +18,14 @@ route.post('/', (req, res) => {
     (typeof conPass === 'undefined')
   ) {
     res.redirect('/register')
-    console.log('Failed Here if 1')
   } else {
     // Check If email exist already
     const userValidStm = 'SELECT `username` FROM `admin` WHERE `username` = ?'
     db.query(userValidStm, [username], (err, result) => {
       if (result.length !== 0) {
         res.redirect('/register')
-        console.log('Failed Here if 2')
       } else if (password !== conPass) {
         res.redirect('/register')
-        console.log('Failed Here else if 1')
       } else {
         insertStatement =
           'Insert Into `admin` (`name`, `username`, `email`, `password`) VALUES (?,?,?,?)'
@@ -37,8 +34,6 @@ route.post('/', (req, res) => {
       }
     })
   }
-
-  console.log({ name, username, email, password, conPass })
 })
 
 module.exports = route
