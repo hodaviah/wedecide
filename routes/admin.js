@@ -97,13 +97,25 @@ router.post('/create-election', verify, (req, res) => {
 })
 
 //************** Route To Get To All the Election ************/
-router.get('/manage-election', (req, res) => {
-  res.render('manage_election')
+router.get('/manage-election', verify, (req, res) => {
+  token = req.cookies.auth
+  user_id = jwt.decode(token).id
+  state1 = 'SELECT `id`, `name`, `price` FROM `election` WHERE admin_id = ?'
+  db.query(state1, [user_id], (err, result) => {
+    res.render('manage_election', { result })
+  })
 })
 
 //*******************Route to the Election **************/
-router.get('/election', (req, res) => {
-  res.render('admin_election')
+router.get('/:id', (req, res) => {
+  id = req.params.id
+  state0 = 'SELECT * FROM `election` WHERE `id` = ?;'
+  state1 = 'SELECT * FROM `poll` WHERE `election_id` = ?;'
+  statement = state0 + state1
+  db.query(statement, [id, id], (err, result) => {
+    console.log(result)
+    res.render('admin_election', { result })
+  })
 })
 
 module.exports = router

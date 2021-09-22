@@ -164,52 +164,22 @@
                           <thead>
                             <tr>
                               <th>Election</th>
-                              <th>Created</th>
-                              <!-- <th></th>
-                              <th></th> -->
+                              <th>Created</th>                              
                             </tr>
                           </thead>
                           <tbody>
-                            <tr>
-                              <td>SUG</td>
-                              <td>15 May 2017</td>
-                              <td><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
-                                Edit
-                              </button></td>
-                              <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                                Delete
-                              </button></td>
-                            </tr>
-                            <tr>
-                              <td>NASS</td>
-                              <td>15 May 2017</td>
-                              <td><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
-                                Edit
-                              </button></td>
-                              <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                                Delete
-                              </button></td>
-                            </tr>
-                            <tr>
-                              <td>ASUU</td>
-                              <td>15 May 2017</td>
-                              <td><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
-                                Edit
-                              </button></td>
-                              <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                                Delete
-                              </button></td>
-                            </tr>
-                            <tr>
-                              <td>WCW</td>
-                              <td>15 May 2017</td>
-                              <td><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
-                                Edit
-                              </button></td>
-                              <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                                Delete
-                              </button></td>
-                            </tr>                            
+                            <% for( let index = 0; index < result.length; index++ ) { %>
+                              <tr>
+                                <td><%= result[index].name %> </td>
+                                <td></td>
+                                <td> <a href="/admin/<%- result[index].id %> "><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
+                                  Edit
+                                </button></a></td>
+                                <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
+                                  Delete
+                                </button></td>
+                              </tr>
+                            <% } %>                                                      
                           </tbody>
                         </table>
                       </div>
