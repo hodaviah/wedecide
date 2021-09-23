@@ -38,10 +38,7 @@
       </div>
     </nav>
     <!-- partial -->
-    <div class="container-fluid page-body-wrapper">
-      
-      
-      
+    <div class="container-fluid page-body-wrapper">      
       
       <div class="main-panel col-lg-12 col-12">        
         <div class="content-wrapper">
@@ -49,110 +46,28 @@
             <div class="col-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Basic form elements</h4>
-                  <p class="card-description">
-                    Basic form elements
-                  </p>
+                  <h4 class="card-title"><%= result[0][0].name %> </h4>
+                  <p class="card-description"></p>
                   <form class="forms-sample">
-                    <div class="form-group">
-                      <label for="exampleInputName1">Poll Question</label>
-                      <div class="form-check">
-                        <label class="form-check-label">
-                          <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                          Name
-                        </label>
-                      </div>
-                      
-                      <div class="form-check">
-                        <label class="form-check-label">
-                          <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                          Name
-                        </label>
-                      </div>
-
-                      <div class="form-check">
-                        <label class="form-check-label">
-                          <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                          Name
-                        </label>
-                      </div>
-
-                      <div class="form-check">
-                        <label class="form-check-label">
-                          <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                          Name
-                        </label>
-                      </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="exampleInputName1">Poll Question</label>
-                        <div class="form-check">
-                          <label class="form-check-label">
-                            <input type="radio" class="form-check-input" name="optionsRadios2" id="optionsRadios2" value="">
-                            Default
-                          </label>
-                        </div>
-
-                        <div class="form-check">
-                            <label class="form-check-label">
-                              <input type="radio" class="form-check-input" name="optionsRadios2" id="optionsRadios2" value="">
-                              Name
-                            </label>
-                          </div>
-
+                    <% for( let index = 0; index < result[1].length; index++ ) { %>
+                      <div class="form-group">
+                        <label for="exampleInputName1"><%= result[1][index].name %> </label>
+                        <% for( let index0 = 0; index0 < result[2].length; index0++ ) { %>
+                          <% if (result[1][index].id === result[2][index0].poll_id) { %>
                           <div class="form-check">
                             <label class="form-check-label">
-                              <input type="radio" class="form-check-input" name="optionsRadios2" id="optionsRadios2" value="">
-                              Name
+                              <input type="radio" class="form-check-input" name="<%= index %> " id="<%= index %> " value="">
+                              
+                                <%= result[2][index0].name %>
+                              
                             </label>
                           </div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="exampleInputName1">Poll Question</label>
-                        <div class="form-check">
-                          <label class="form-check-label">
-                            <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                            Default
-                          </label>
-                        </div>
-
-                        <div class="form-check">
-                            <label class="form-check-label">
-                              <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                              Name
-                            </label>
-                        </div>
-                        
-                        <div class="form-check">
-                            <label class="form-check-label">
-                              <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                              Name
-                            </label>
-                        </div>
-
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="exampleInputName1">Poll Question</label>
-                        <div class="form-check">
-                          <label class="form-check-label">
-                            <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                            Default
-                          </label>
-                        </div>
-
-                        <div class="form-check">
-                            <label class="form-check-label">
-                              <input type="radio" class="form-check-input" name="optionsRadios" id="optionsRadios1" value="">
-                              Name
-                            </label>
-                          </div>
-                    </div>
+                          <% } %>
+                        <% } %>                                                                        
+                      </div>
+                    <% } %>                                        
         
-                    <button type="submit" class="btn btn-primary mr-2">Submit</button>
-                    <button class="btn btn-light">Cancel</button>
+                    <button type="submit" class="btn btn-primary mr-2">Submit</button>                    
                   </form>
                 </div>
               </div>

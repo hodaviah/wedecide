@@ -111,11 +111,32 @@ router.get('/:id', (req, res) => {
   id = req.params.id
   state0 = 'SELECT * FROM `election` WHERE `id` = ?;'
   state1 = 'SELECT * FROM `poll` WHERE `election_id` = ?;'
-  statement = state0 + state1
-  db.query(statement, [id, id], (err, result) => {
+  state2 =
+    'SELECT * FROM `candidate` WHERE candidate.election_id = ? ORDER BY candidate.poll_id;'
+  statement = state0 + state1 + state2
+  db.query(statement, [id, id, id], (err, result) => {
     console.log(result)
     res.render('admin_election', { result })
   })
+})
+
+//*************** Handle Add Poll ***********/
+router.post('/:id/add-poll', (req, res) => {
+  const id = req.params.id
+  const name = req.body.name
+  state0 = 'Insert Into `poll` (`election_id`,`name`) VALUES (?,?)'
+  db.query(state0, [id, name])
+  res.redirect(`/admin/${id}`)
+})
+
+//*************** Handle Add Candidate ***********/
+router.post('/:id/add-can', (req, res) => {
+  const id = req.params.id
+  const { position, canName } = req.body
+  state0 =
+    'Insert Into `candidate` (`election_id`,`poll_id`,`name`, `vote`) VALUES (?,?,?,?)'
+  db.query(state0, [id, position, canName, 0])
+  res.redirect(`/admin/${id}`)
 })
 
 module.exports = router

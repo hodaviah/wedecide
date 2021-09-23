@@ -18,12 +18,21 @@ router.get('/vote-election', (req, res) => {
   })
 })
 
-router.get('/vote-center', (req, res) => {
-  res.render('vote_center')
-})
-
 router.get('/webcam', (req, res) => {
   res.render('webcam')
+})
+
+router.get('/:id', (req, res) => {
+  const id = req.params.id
+  state0 = 'SELECT `id`, `name` FROM `election` WHERE `id` = ?;'
+  state1 = 'SELECT * FROM `poll` WHERE `election_id` = ?;'
+  state2 = 'SELECT * FROM `candidate` WHERE candidate.election_id = ?;'
+
+  statement = state0 + state1 + state2
+  db.query(statement, [id, id, id], (err, result) => {
+    console.log(result)
+    res.render('vote_center', { result })
+  })
 })
 
 module.exports = router

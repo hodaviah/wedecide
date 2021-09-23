@@ -35,7 +35,8 @@ CREATE TABLE `wedecide`.`poll` (
 
 // Candidate
 CREATE TABLE `wedecide`.`candidate` ( 
-    `id` INT(11) NOT NULL AUTO_INCREMENT , 
+    `id` INT(11) NOT NULL AUTO_INCREMENT ,
+    `election_id` INT(11) NOT NULL ,  
     `poll_id` INT(11) NOT NULL , 
     `name` VARCHAR(150) NOT NULL , 
     `vote` VARCHAR(100) NOT NULL , 

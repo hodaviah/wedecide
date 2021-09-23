@@ -159,13 +159,12 @@
                 <div class="card-body">
                   <h4 class="card-title">Poll</h4>
                   <p class="card-description"></p>
-                  <form class="forms-sample">
+                  <form action="/admin/<%= result[0][0].id %>/add-poll" method="POST" class="forms-sample">
                     <div class="form-group">
                       <label for="exampleTextarea1">Position</label>
-                      <textarea class="form-control" id="exampleTextarea1" rows="4"></textarea>
+                      <textarea name="name" class="form-control" id="exampleTextarea1" rows="4"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-gradient-primary mr-2">Submit</button>
-                    <button class="btn btn-light">Cancel</button>
+                    <button type="submit" class="btn btn-gradient-primary mr-2">Submit</button>                    
                   </form>
                 </div>
               </div>
@@ -178,46 +177,19 @@
                     <table class="table">
                       <thead>
                         <tr>
-                          <th>Position</th>
-                          <th>No of Candidate</th>
-                          <!-- <th>Created</th>
-                          <th>Status</th> -->
+                          <th>Position</th>                        
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>Presidency</td>
-                          <td>5</td>
-                          <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                            Delete
-                          </button>
-                          </td>                          
-                        </tr>
-                        <tr>
-                          <td>Presidency</td>
-                          <td>5</td>
-                          <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                            Delete
-                          </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Presidency</td>
-                          <td>5</td>
-                          <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                            Delete
-                          </button>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Presidency</td>
-                          <td>5</td>
-                          <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                            Delete
-                          </button>
-                          </td>
-                        </tr>
-                        
+                        <% for( let index = 0; index < result[1].length; index++ ) { %>
+                          <tr>
+                            <td><%= result[1][index].name %></td>                          
+                            <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
+                              Delete
+                            </button>
+                            </td>                          
+                          </tr>
+                        <% } %>                                                
                       </tbody>
                     </table>
                   </div>
@@ -229,20 +201,20 @@
                   <div class="card-body">
                     <h4 class="card-title">Register Candidate</h4>
                     <p class="card-description"></p>
-                    <form class="forms-sample">
+                    <form action="/admin/<%= result[0][0].id %>/add-can" method="POST" class="forms-sample">
                       
                       <div class="form-group">
                         <label for="exampleTextarea1">Positions</label>
-                        <select class="form-control form-control-lg" id="exampleFormControlSelect2">
-                          <option>Presidency</option>
-                          <option>Gen. Sec</option>
-                          <option>Vice President</option>                          
+                        <select name="position" class="form-control form-control-lg" id="exampleFormControlSelect2">                    
+                          <% for( let index = 0; index < result[1].length; index++ ) { %>
+                            <option value="<%= result[1][index].id %> "><%= result[1][index].name %></option>
+                          <% } %>
                         </select>
                       </div>
 
                       <div class="form-group">
                         <label for="exampleTextarea1">Candidate Name</label>
-                        <textarea class="form-control" id="exampleTextarea1" rows="4"></textarea>
+                        <textarea name="canName" class="form-control" id="exampleTextarea1" rows="4"></textarea>
                       </div>
                       <button type="submit" class="btn btn-gradient-primary mr-2">Submit</button>
                       <button class="btn btn-light">Cancel</button>
@@ -261,38 +233,25 @@
                         <tr>
                           <th>Name</th>
                           <th>Position</th>
-                          <th>No of Vote</th>
-                          <!-- <th>Status</th> -->
+                          <th>No of Vote</th>                          
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>Jacob</td>
-                          <td>Presidency</td>
-                          <td>5</td>
-                          <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                            Delete
-                          </button>
-                          </td>                          
-                        </tr>
-                        <tr>
-                          <td>Isaac</td>
-                          <td>Vice President</td>
-                          <td>3</td>
-                          <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                            Delete
-                          </button>
-                          </td>                          
-                        </tr>
-                        <tr>
-                          <td>Abraham</td>
-                          <td>Gen Sec</td>
-                          <td>15</td>
-                          <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
-                            Delete
-                          </button>
-                          </td>                          
-                        </tr>                        
+                        <% for( let index = 0; index < result[2].length; index++ ) { %>
+                          <tr>
+                            <td><%= result[2][index].name %> </td>
+                            <td><% for( let index0 = 0; index0 < result[1].length; index0++ ) { %>
+                            <% if (result[2][index].poll_id == result[1][index0].id) { %>
+                              <%=  result[1][index0].name %>
+                            <% } %>
+                            <% } %></td>
+                            <td><%= result[2][index].vote %></td>
+                            <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
+                              Delete
+                            </button>
+                            </td>                          
+                          </tr>
+                        <% } %>                                                
                       </tbody>
                     </table>
                   </div>
@@ -307,7 +266,7 @@
                     <table class="table">
                       <thead>
                         <tr>
-                          <th>Userame</th>
+                          <th>Username</th>
                           <th>Email</th>                          
                           <th>Vote Status</th>                          
                         </tr>
