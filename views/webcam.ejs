@@ -136,6 +136,7 @@
       const canvasElement = document.getElementById('canvas')
       const snapSoundElement = document.getElementById('snapSound')
       const capture = document.getElementById('capture')
+      const dataDiv = document.getElementById('data-div')
       const save = document.getElementById('save')
       const restart = document.getElementById('restart')
       const webcam = new Webcam(
@@ -145,22 +146,19 @@
         snapSoundElement,
       )
 
-      webcam
-        .start()
-        .then((result) => {
-          console.log('webcam started')
-        })
-        .catch((err) => {
-          console.log(err)
-        })
-
-      function capturePic() {
-        webcam.snap()
-        let picture = webcam.snap()
-      }
-
-      function startWebcam() {
-        document.getElementById('results').innerHTML = ' '
+      if (
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent,
+        )
+      ) {
+        // true for mobile device
+        console.log('mobile device')
+        dataDiv.innerHTML =
+          //'<img src="' + pict + '"/>'
+          '<input name="image" type="file" accept="image/*" capture="camera">'
+      } else {
+        // false for not mobile device
+        console.log('not mobile device')
         webcam
           .start()
           .then((result) => {
@@ -169,15 +167,34 @@
           .catch((err) => {
             console.log(err)
           })
-      }
 
-      function take_snapshot() {
-        // take snapshot and get image data
-        let pict = webcam.snap()
-        console.log(pict)
-        document.getElementById('results').innerHTML =
-          //'<img src="' + pict + '"/>'
-          '<input type="image" id="image" alt="Login" src="' + pict + '">'
+        function capturePic() {
+          webcam.snap()
+          let picture = webcam.snap()
+        }
+
+        function startWebcam() {
+          document.getElementById('results').innerHTML = ' '
+          webcam
+            .start()
+            .then((result) => {
+              console.log('webcam started')
+            })
+            .catch((err) => {
+              console.log(err)
+            })
+        }
+
+        function take_snapshot() {
+          // take snapshot and get image data
+          let pict = webcam.snap()
+          console.log(pict)
+          document.getElementById('results').innerHTML =
+            //'<img src="' + pict + '"/>'
+            '<input name="image" type="image" id="image" alt="Login" src="' +
+            pict +
+            '">'
+        }
       }
     </script>
 
