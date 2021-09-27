@@ -70,7 +70,7 @@
             </li>
             
             <li class="nav-item nav-logout d-none d-lg-block">
-              <a class="nav-link" href="#">
+              <a class="nav-link" href="/admin/logout">
                 <i class="mdi mdi-power"></i>
               </a>
             </li>
@@ -88,48 +88,9 @@
       <!-- partial -->
       <div class="container-fluid page-body-wrapper">
         <!-- partial:partials/_sidebar.html -->
-        <nav class="sidebar sidebar-offcanvas" id="sidebar">
-          <ul class="nav">
-            <li class="nav-item nav-profile">
-              <a href="#" class="nav-link">
-                <div class="nav-profile-image">
-                  <img src="images/faces/face1.jpg" alt="profile" />
-                  <span class="login-status online"></span>
-                  <!--change to offline or busy as needed-->
-                </div>
-                <div class="nav-profile-text d-flex flex-column">
-                  <span class="font-weight-bold mb-2">David Grey. H</span>
-                  <span class="text-secondary text-small">Project Manager</span>
-                </div>
-                <i
-                  class="mdi mdi-bookmark-check text-success nav-profile-badge"
-                ></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin">
-                <span class="menu-title">Dashboard</span>
-                <i class="mdi mdi-home menu-icon"></i>
-              </a>
-            </li>
-            
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/create-election">
-                <span class="menu-title">Create Election</span>
-                <i class="mdi mdi-contacts menu-icon"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/manage-election">
-                <span class="menu-title">Manage Election</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              </a>
-            </li>
-            
-          </ul>
-        </nav>
+        
         <!-- partial -->
-        <div class="main-panel">
+        <div class="main-panel col-lg-12 col-12">
           <div class="content-wrapper">
             
             <div class="page-header">
@@ -155,6 +116,26 @@
             </div>
             <div class="row">
               <div class="col-md-6 stretch-card grid-margin">
+                <a class="col-md-4" href="/admin/create-election">
+                  <button type="button" class="btn btn-gradient-primary btn-icon-text">
+                    <i class="mdi mdi-plus btn-icon-prepend"></i>
+                    Create Election
+                  </button>
+                </a>
+                <a class="col-md-4" href="/admin/manage-election">
+                  <button type="button" class="btn btn-gradient-primary btn-icon-text">
+                    <i class="mdi mdi-file-check btn-icon-prepend"></i>
+                    Manage Election
+                  </button>
+                </a>
+              </div>
+              <div class="col-md-6 stretch-card grid-margin">
+                
+              </div>
+              
+            </div>
+            <div class="row">
+              <div class="col-md-6 stretch-card grid-margin">
                 <div class="card bg-gradient-danger card-img-holder text-white">
                   <div class="card-body">
                     <img
@@ -166,7 +147,7 @@
                       Elections
                       <i class="mdi mdi-chart-line mdi-24px float-right"></i>
                     </h4>
-                    <h2 class="mb-5">15</h2>
+                    <h2 class="mb-5"> <%= result[0][0].numberOfElection %> </h2>
                   </div>
                 </div>
               </div>
@@ -184,7 +165,7 @@
                         class="mdi mdi-bookmark-outline mdi-24px float-right"
                       ></i>
                     </h4>
-                    <h2 class="mb-5">40</h2>
+                    <h2 class="mb-5"> <%= result[1][0].numberOfPoll %> </h2>
                   </div>
                 </div>
               </div>
@@ -202,51 +183,33 @@
                           <tr>
                             <th>Election</th>
                             <th>No of Polls</th>                
-                            <th>No of Voters</th>
+                            <th>Price</th>
                             <th>Status</th>                            
                             <th>End Date</th>
                           </tr>
                         </thead>
                         <tbody>
-                          <tr>
-                            <td>                              
-                              SUG Election
-                            </td>
-                            <td>14</td>
-                            <td>43</td>
-                            <td>
-                              <label class="badge badge-gradient-success">
-                                ON Going
-                              </label>
-                            </td>
-                            <td>Dec 5, 2021</td>                            
-                          </tr>
-                          <tr>
-                            <td>                              
-                              NASS Election
-                            </td>
-                            <td>11</td>
-                            <td>23</td>
-                            <td>
-                              <label class="badge badge-gradient-success">
-                                ON Going
-                              </label>
-                            </td>
-                            <td>Dec 5, 2021</td>                            
-                          </tr>
-                          <tr>
-                            <td>                              
-                              ASUU Election
-                            </td>
-                            <td>14</td>
-                            <td>43</td>
-                            <td>
-                              <label class="badge badge-gradient-success">
-                                ON Going
-                              </label>
-                            </td>
-                            <td>Dec 5, 2021</td>                            
-                          </tr>                          
+                          <% for( let index = 0; index < result[2].length; index++ ) { %>
+                            <tr>
+                              <td>                              
+                                <%= result[2][index].name %> 
+                              </td>
+                              <td>
+                                <%= result[2][index].numberOfPoll %> 
+                              </td>
+                              <td>
+                                <%= result[2][index].price %> 
+                              </td>
+                              <td>
+                                <label class="badge badge-gradient-success">
+                                  Ongoing
+                                </label>
+                              </td>
+                              <td>
+                                <%= result[2][index].end_date %> 
+                              </td>                            
+                            </tr>
+                          <% } %>                                                  
                         </tbody>
                       </table>
                     </div>
@@ -263,19 +226,15 @@
               <span
                 class="text-muted d-block text-center text-sm-left d-sm-inline-block"
               >
-                Copyright © bootstrapdash.com 2020
+                Copyright © 2021
               </span>
               <span
                 class="float-none float-sm-right d-block mt-1 mt-sm-0 text-center"
-              >
-                Free
-                <a
-                  href="https://www.bootstrapdash.com/bootstrap-admin-template/"
-                  target="_blank"
-                >
-                  Bootstrap admin templates
+              >                
+                
+              Made by Hodaviahtechnologyagency
                 </a>
-                from Bootstrapdash.com
+                
               </span>
             </div>
           </footer>

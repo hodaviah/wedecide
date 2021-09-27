@@ -12,7 +12,17 @@ router.get('/', verify, (req, res, next) => {
   token = req.cookies.auth
   user_id = jwt.decode(token).id
   console.log(user_id)
-  res.render('admin_dashboard')
+  state0 =
+    'SELECT `election`.`id`, `election`.`name`, `election`.`price`, `election`.`start_date`, `election`.`end_date`, count(`poll`.`id`) AS numberOfPoll FROM `election` INNER JOIN `poll` ON `election`.id = `poll`.`election_id` WHERE `election`.`admin_id` = ? group by `election`.`id`;'
+  state1 =
+    'SELECT COUNT(*) AS numberOfElection FROM `election` WHERE 	`election`.`admin_id` = ?;'
+  state2 =
+    'SELECT count(`poll`.`id`) AS numberOfPoll FROM `poll` INNER JOIN `election` ON `poll`.`election_id` = `election`.`id` WHERE `election`.`admin_id` = ?;'
+  statement = state1 + state2 + state0
+
+  db.query(statement, [user_id, user_id, user_id], (err, result) => {
+    res.render('admin_dashboard', { result })
+  })
 })
 
 //****************** The Route To Login In To DashBoard ********************/
@@ -48,6 +58,12 @@ router.post('/', (req, res) => {
       res.cookie('auth', token).redirect('/admin')
     }
   })
+})
+
+//******************Logout Section ***************/
+router.get('/logout', (req, res) => {
+  res.cookie('auth', null)
+  res.redirect('/')
 })
 
 //****************** The Route To Create An Election ********************/
@@ -107,7 +123,7 @@ router.get('/manage-election', verify, (req, res) => {
 })
 
 //*******************Route to the Election **************/
-router.get('/:id', (req, res) => {
+router.get('/:id', verify, (req, res) => {
   id = req.params.id
   state0 = 'SELECT * FROM `election` WHERE `id` = ?;'
   state1 = 'SELECT * FROM `poll` WHERE `election_id` = ?;'
@@ -115,13 +131,13 @@ router.get('/:id', (req, res) => {
     'SELECT * FROM `candidate` WHERE candidate.election_id = ? ORDER BY candidate.poll_id;'
   statement = state0 + state1 + state2
   db.query(statement, [id, id, id], (err, result) => {
-    console.log(result)
+    //console.log(result)
     res.render('admin_election', { result })
   })
 })
 
 //*************** Handle Add Poll ***********/
-router.post('/:id/add-poll', (req, res) => {
+router.post('/:id/add-poll', verify, (req, res) => {
   const id = req.params.id
   const name = req.body.name
   state0 = 'Insert Into `poll` (`election_id`,`name`) VALUES (?,?)'
@@ -130,13 +146,31 @@ router.post('/:id/add-poll', (req, res) => {
 })
 
 //*************** Handle Add Candidate ***********/
-router.post('/:id/add-can', (req, res) => {
+router.post('/:id/add-can', verify, (req, res) => {
   const id = req.params.id
   const { position, canName } = req.body
   state0 =
     'Insert Into `candidate` (`election_id`,`poll_id`,`name`, `vote`) VALUES (?,?,?,?)'
   db.query(state0, [id, position, canName, 0])
   res.redirect(`/admin/${id}`)
+})
+
+router.delete('/admin/delete-election/:id', verify, (req, res) => {
+  id = req.params.id
+  token = req.cookies.auth
+  user_id = jwt.decode(token).id
+})
+
+router.delete('/admin/delete-poll/:id', verify, (req, res) => {
+  id = req.params.id
+  token = req.cookies.auth
+  user_id = jwt.decode(token).id
+})
+
+router.delete('/admin/delete-candidate/:id', verify, (req, res) => {
+  id = req.params.id
+  token = req.cookies.auth
+  user_id = jwt.decode(token).id
 })
 
 module.exports = router

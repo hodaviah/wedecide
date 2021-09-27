@@ -42,3 +42,17 @@ CREATE TABLE `wedecide`.`candidate` (
     `vote` VARCHAR(100) NOT NULL , 
     PRIMARY KEY (`id`)) 
     ENGINE = InnoDB;
+
+// Voters
+CREATE TABLE `wedecide`.`voter` ( 
+    `id` INT(11) NOT NULL AUTO_INCREMENT , 
+    `username` VARCHAR(100) NOT NULL , 
+    `email` VARCHAR(256) NOT NULL , 
+    `password` VARCHAR(100) NOT NULL , 
+    `phone` VARCHAR(13) NOT NULL , 
+    `election_id` INT(11) NOT NULL , 
+    `paid_fees` TINYINT(2) NOT NULL DEFAULT '0' , 
+    `face_path` VARCHAR(256) NOT NULL , 
+    `vote` TINYINT(2) NOT NULL DEFAULT '0' ,     
+    PRIMARY KEY (`id`)) 
+    ENGINE = InnoDB;

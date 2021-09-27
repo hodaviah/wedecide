@@ -1,6 +1,19 @@
 const router = require('express').Router()
 const express = require('express')
+const multer = require('multer')
 router.use(express.static('public'))
+
+let storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads')
+  },
+  filename: function (req, file, cb) {
+    let extArray = file.mimetype.split('/')
+    let extension = extArray[extArray.length - 1]
+    cb(null, file.fieldname + '-' + Date.now() + '.' + extension)
+  },
+})
+const upload = multer({ storage: storage })
 
 const db = require('../database/confix')
 
@@ -9,6 +22,10 @@ router.get('/register-election', (req, res) => {
   db.query(state1, (err, result) => {
     res.render('vote_register', { result })
   })
+})
+
+router.post('/register', upload.single('image'), (req, res) => {
+  console.log(req.body, req.file)
 })
 
 router.get('/vote-election', (req, res) => {
