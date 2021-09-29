@@ -110,18 +110,18 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="/admin/create-contest">
-                <span class="menu-title">Create Contest</span>
-                <i class="mdi mdi-contacts menu-icon"></i>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="/admin/manage-contest">
-                <span class="menu-title">Manage Contest</span>
-                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
-              </a>
-            </li>
-            
+                <a class="nav-link" href="/admin/create-contest">
+                  <span class="menu-title">Create Contest</span>
+                  <i class="mdi mdi-contacts menu-icon"></i>
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="/admin/manage-contest">
+                  <span class="menu-title">Manage Contest</span>
+                  <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+                </a>
+              </li>
+
           </ul>
         </nav>
         <!-- partial -->
@@ -153,9 +153,9 @@
             <div class="col-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Poll</h4>
+                  <h4 class="card-title">Category</h4>
                   <p class="card-description"></p>
-                  <form action="/admin/election/<%= result[0][0].id %>/add-poll" method="POST" class="forms-sample">
+                  <form action="/admin/contest/<%= result[0][0].id %>/add-poll" method="POST" class="forms-sample">
                     <div class="form-group">
                       <label for="exampleTextarea1">Position</label>
                       <textarea name="name" class="form-control" id="exampleTextarea1" rows="4"></textarea>
@@ -168,7 +168,7 @@
             <div class="col-lg-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Polls</h4>
+                    <h4 class="card-title">Category</h4>
                     <p class="card-description"></p>
                     <table class="table">
                       <thead>
@@ -196,9 +196,9 @@
               <div class="col-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Register Candidate</h4>
+                    <h4 class="card-title">Register Contestant</h4>
                     <p class="card-description"></p>
-                    <form action="/admin/election/<%= result[0][0].id %>/add-can" method="POST" class="forms-sample">
+                    <form action="/admin/contest/<%= result[0][0].id %>/add-cont" method="POST" class="forms-sample">
                       
                       <div class="form-group">
                         <label for="exampleTextarea1">Positions</label>
@@ -223,7 +223,7 @@
               <div class="col-lg-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Candidate Table</h4>
+                    <h4 class="card-title">Contestants</h4>
                     <p class="card-description"></p>
                     <table class="table">
                       <thead>

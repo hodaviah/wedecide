@@ -54,6 +54,12 @@ app.use('/register', register)
 const admin_dashboard = require('./routes/admin')
 app.use('/admin', admin_dashboard)
 
+const admin_election = require('./routes/admin')
+app.use('/admin/election', admin_election)
+
+const admin_contest = require('./routes/admin')
+app.use('/admin/contest', admin_contest)
+
 const voter = require('./routes/voter')
 app.use('/voter', voter)
 

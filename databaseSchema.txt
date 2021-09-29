@@ -56,3 +56,35 @@ CREATE TABLE `wedecide`.`voter` (
     `vote` TINYINT(2) NOT NULL DEFAULT '0' ,     
     PRIMARY KEY (`id`)) 
     ENGINE = InnoDB;
+
+// contest
+CREATE TABLE `wedecide`.`contest` ( 
+    `id` INT(11) NOT NULL AUTO_INCREMENT , 
+    `admin_id` INT(11) NOT NULL , 
+    `name` VARCHAR(250) NOT NULL , 
+    `price` VARCHAR(10) NOT NULL DEFAULT '0' , 
+    `start_date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP , 
+    `end_date` DATETIME NOT NULL , 
+    `description` VARCHAR(300) NOT NULL , 
+    PRIMARY KEY (`id`), 
+    UNIQUE `ind_elect_name` (`name`)) 
+    ENGINE = InnoDB;
+
+
+// Contestant_Poll
+CREATE TABLE `wedecide`.`contestant_poll` ( 
+    `id` INT(11) NOT NULL AUTO_INCREMENT , 
+    `contest_id` INT(11) NOT NULL , 
+    `name` VARCHAR(100) NOT NULL , 
+    PRIMARY KEY (`id`)) 
+    ENGINE = InnoDB;
+
+// Contestant
+CREATE TABLE `wedecide`.`contestant` ( 
+    `id` INT(11) NOT NULL AUTO_INCREMENT ,
+    `contest_id` INT(11) NOT NULL ,  
+    `poll_id` INT(11) NOT NULL , 
+    `name` VARCHAR(150) NOT NULL , 
+    `vote` VARCHAR(100) NOT NULL DEFAULT '0', 
+    PRIMARY KEY (`id`)) 
+    ENGINE = InnoDB;

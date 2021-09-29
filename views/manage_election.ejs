@@ -109,6 +109,18 @@
                 <i class="mdi mdi-format-list-bulleted menu-icon"></i>
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/create-contest">
+                <span class="menu-title">Create Contest</span>
+                <i class="mdi mdi-contacts menu-icon"></i>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/admin/manage-contest">
+                <span class="menu-title">Manage Contest</span>
+                <i class="mdi mdi-format-list-bulleted menu-icon"></i>
+              </a>
+            </li>
             
           </ul>
         </nav>
@@ -154,7 +166,7 @@
                               <tr>
                                 <td><%= result[index].name %> </td>
                                 <td></td>
-                                <td> <a href="/admin/<%- result[index].id %> "><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
+                                <td> <a href="/admin/election/<%- result[index].id %> "><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
                                   Edit
                                 </button></a></td>
                                 <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
