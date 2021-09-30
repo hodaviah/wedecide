@@ -46,6 +46,10 @@ router.get('/register-contest', (req, res) => {
   })
 })
 
+router.post('/paid-contest', (req, res) => {
+  //console.log()
+})
+
 router.get('/:id', (req, res) => {
   const id = req.params.id
   state0 = 'SELECT `id`, `name` FROM `election` WHERE `id` = ?;'
