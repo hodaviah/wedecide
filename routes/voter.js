@@ -39,6 +39,13 @@ router.get('/webcam', (req, res) => {
   res.render('webcam')
 })
 
+router.get('/register-contest', (req, res) => {
+  state1 = 'SELECT `name`, `price` FROM `contest`'
+  db.query(state1, (err, result) => {
+    res.render('contest_register', { result })
+  })
+})
+
 router.get('/:id', (req, res) => {
   const id = req.params.id
   state0 = 'SELECT `id`, `name` FROM `election` WHERE `id` = ?;'
