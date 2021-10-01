@@ -37,26 +37,28 @@
                   Sign up to vote, it is easy. It only takes a few steps
                 </h6>
                 <form
-                  action="/voter/register"
+                  action="/voter/contest-register"
                   method="POST"
-                  enctype="multipart/form-data"
+                  
                   class="pt-3"
                 >
                   <div class="form-group">
                     <select
-                      name="election"
+                      name="contest"
                       class="form-control form-control-lg"
                       id="exampleFormControlSelect2"
                     >
                       <% for( let index = 0; index < result.length; index++ ) {
                       %>
-                      <option value="<%= result[index].id %>">
+                      <option value="<%= result[index].id %>/<%= result[index].price %>">
                         <%= result[index].name %> | Fees: N<%=
                         result[index].price %>
                       </option>
+                      
                       <% } %>
                     </select>
                   </div>
+
                   <div class="form-group">
                     <input
                       required
@@ -97,8 +99,18 @@
                   <div class="form-group">
                     <input
                       required
-                      name="phone"
-                      type="tel"
+                      name="cardName"
+                      type="text"
+                      class="form-control form-control-lg"
+                      id="exampleInputPhone"
+                      placeholder="Name on Card"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <input
+                      required
+                      name="cardNo"
+                      type="text"
                       class="form-control form-control-lg"
                       id="exampleInputPhone"
                       placeholder="Card No"
@@ -108,8 +120,8 @@
                     <div class="col">
                       <input
                         required
-                        name="phone"
-                        type="tel"
+                        name="mmyy"
+                        type="text"
                         class="form-control form-control-lg"
                         id="exampleInputPhone"
                         placeholder="MM/YY"
@@ -119,8 +131,8 @@
                     <div class="col">
                       <input
                         required
-                        name="phone"
-                        type="tel"
+                        name="cvv"
+                        type="text"
                         class="form-control form-control-lg"
                         id="exampleInputPhone"
                         placeholder="CVV"
@@ -137,8 +149,8 @@
                   </div>
                   <div class="text-center mt-4 font-weight-light">
                     Already paid for an election?
-                    <a href="/voter/vote-election" class="text-primary">
-                      Login
+                    <a href="/voter/contest-vote" class="text-primary">
+                      I Have A Vouchar
                     </a>
                   </div>
                 </form>
