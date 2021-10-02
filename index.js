@@ -63,6 +63,12 @@ app.use('/admin/contest', admin_contest)
 const voter = require('./routes/voter')
 app.use('/voter', voter)
 
+const contest = require('./routes/voter')
+app.use('/voter/contest-center', contest)
+
+const election = require('./routes/voter')
+app.use('/voter/election-center', election)
+
 app.use((req, res, next) => {
   res.status(404).render('error-404')
 })

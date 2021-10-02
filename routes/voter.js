@@ -125,7 +125,7 @@ router.get('/contest-vote', (req, res) => {
   res.render('contest_vote')
 })
 
-router.get('/:id', (req, res) => {
+router.get('/election-center/:id', (req, res) => {
   const id = req.params.id
   state0 = 'SELECT `id`, `name` FROM `election` WHERE `id` = ?;'
   state1 = 'SELECT * FROM `poll` WHERE `election_id` = ?;'
@@ -136,6 +136,24 @@ router.get('/:id', (req, res) => {
     console.log(result)
     res.render('vote_center', { result })
   })
+})
+
+router.get('/contest-center/:id', (req, res) => {
+  const id = req.params.id
+  state0 = 'SELECT `id`, `name` FROM `contest` WHERE `id` = ?;'
+  state1 = 'SELECT * FROM `contestant_poll` WHERE `contest_id` = ?;'
+  state2 = 'SELECT * FROM `contestant` WHERE contestant.contest_id = ?;'
+
+  statement = state0 + state1 + state2
+  db.query(statement, [id, id, id], (err, result) => {
+    console.log(result)
+    res.render('contest_center', { result })
+  })
+})
+
+router.post('/contest-center', (req, res) => {
+  var newdata = Object.values(req.body)
+  console.log(newdata)
 })
 
 module.exports = router

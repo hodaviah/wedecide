@@ -47,7 +47,7 @@
                 <div class="card-body">
                   <h4 class="card-title"><%= result[0][0].name %> </h4>
                   <p class="card-description"></p>
-                  <form class="forms-sample">
+                  <form action="/voter/contest-center" method="POST" class="forms-sample">
                     <% for( let index = 0; index < result[1].length; index++ ) { %>
                       <div class="form-group">
                         <label for="exampleInputName1"><%= result[1][index].name %> </label>
@@ -55,7 +55,7 @@
                           <% if (result[1][index].id === result[2][index0].poll_id) { %>
                           <div class="form-check">
                             <label class="form-check-label">
-                              <input type="radio" class="form-check-input" name="<%= index %> " id="<%= index %> " value="">
+                              <input  type="radio" class="form-check-input" name="<%= result[1][index].name %>" id="<%=index%> " value="<%= result[2][index0].id %>">
                               
                                 <%= result[2][index0].name %>
                               
