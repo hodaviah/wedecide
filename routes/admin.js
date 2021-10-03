@@ -11,7 +11,6 @@ router.use(express.static('public'))
 router.get('/', verify, (req, res, next) => {
   token = req.cookies.auth
   user_id = jwt.decode(token).id
-  console.log(user_id)
   state0 =
     'SELECT `election`.`id`, `election`.`name`, `election`.`price`, `election`.`start_date`, `election`.`end_date`, count(`poll`.`id`) AS numberOfPoll FROM `election` INNER JOIN `poll` ON `election`.id = `poll`.`election_id` WHERE `election`.`admin_id` = ? group by `election`.`id`;'
   state1 =
