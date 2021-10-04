@@ -17,10 +17,12 @@ router.get('/', verify, (req, res, next) => {
     'SELECT COUNT(*) AS numberOfElection FROM `election` WHERE 	`election`.`admin_id` = ?;'
   state2 =
     'SELECT count(`poll`.`id`) AS numberOfPoll FROM `poll` INNER JOIN `election` ON `poll`.`election_id` = `election`.`id` WHERE `election`.`admin_id` = ?;'
-  statement = state1 + state2 + state0
+  state3 =
+    'SELECT COUNT(*) AS numberOfContest FROM `contest` WHERE 	`contest`.`admin_id` = ?;'
+  statement = state1 + state2 + state0 + state3
 
   try {
-    db.query(statement, [user_id, user_id, user_id], (err, result) => {
+    db.query(statement, [user_id, user_id, user_id, user_id], (err, result) => {
       res.render('admin_dashboard', { result })
     })
   } catch (error) {
@@ -180,6 +182,7 @@ router.get('/manage-contest', verify, (req, res) => {
 //*******************Route to the Election **************/
 router.get('/election/:id', verify, (req, res) => {
   id = req.params.id
+  res.cookie('electionState', id)
   state0 = 'SELECT * FROM `election` WHERE `id` = ?;'
   state1 = 'SELECT * FROM `poll` WHERE `election_id` = ?;'
   state2 =
@@ -194,6 +197,7 @@ router.get('/election/:id', verify, (req, res) => {
 //*******************Route to the Election **************/
 router.get('/contest/:id', verify, (req, res) => {
   id = req.params.id
+  res.cookie('contestState', id)
   state0 = 'SELECT * FROM `contest` WHERE `id` = ?;'
   state1 = 'SELECT * FROM `contestant_poll` WHERE `contest_id` = ?;'
   state2 =
@@ -243,22 +247,74 @@ router.post('/contest/:id/add-cont', verify, (req, res) => {
   res.redirect(`/admin/contest/${id}`)
 })
 
-router.delete('/admin/election/delete-election/:id', verify, (req, res) => {
+//*******Delete An Election */
+router.get('/election/delete-election/:id', verify, (req, res) => {
   id = req.params.id
   token = req.cookies.auth
   user_id = jwt.decode(token).id
+  state = 'DELETE FROM `election` WHERE `id`= ? AND `admin_id` = ?;'
+  db.query(state, [id, user_id], (err, result) => {
+    res.redirect('/admin/manage-election')
+  })
 })
 
-router.delete('/admin/election/delete-poll/:id', verify, (req, res) => {
+//*******Delete An Poll */
+router.get('/election/delete-poll/:id', verify, (req, res) => {
   id = req.params.id
   token = req.cookies.auth
   user_id = jwt.decode(token).id
+  electionState = req.cookies.electionState
+  state = 'DELETE FROM `poll` WHERE `id`= ?;'
+  db.query(state, [id], (err, result) => {
+    res.redirect(`/admin/election/${electionState}`)
+  })
 })
 
-router.delete('/admin/delete-candidate/:id', verify, (req, res) => {
+//*******Delete An Candidate */
+router.get('/election/delete-candidate/:id', verify, (req, res) => {
   id = req.params.id
   token = req.cookies.auth
   user_id = jwt.decode(token).id
+  electionState = req.cookies.electionState
+  state = 'DELETE FROM `candidate` WHERE `id`= ?;'
+  db.query(state, [id], (err, result) => {
+    res.redirect(`/admin/election/${electionState}`)
+  })
+})
+
+//*******Delete An Contest */
+router.get('/contest/delete-contest/:id', verify, (req, res) => {
+  id = req.params.id
+  token = req.cookies.auth
+  user_id = jwt.decode(token).id
+  state = 'DELETE FROM `contest` WHERE `id`= ? AND `admin_id` = ?;'
+  db.query(state, [id, user_id], (err, result) => {
+    res.redirect('/admin/manage-contest')
+  })
+})
+
+//*******Delete An Categories */
+router.get('/contest/delete-category/:id', verify, (req, res) => {
+  id = req.params.id
+  token = req.cookies.auth
+  user_id = jwt.decode(token).id
+  contestState = req.cookies.contestState
+  state = 'DELETE FROM `contestant_poll` WHERE `id`= ?;'
+  db.query(state, [id], (err, result) => {
+    res.redirect(`/admin/contest/${contestState}`)
+  })
+})
+
+//*******Delete An Contestants */
+router.get('/contest/delete-contestant/:id', verify, (req, res) => {
+  id = req.params.id
+  token = req.cookies.auth
+  user_id = jwt.decode(token).id
+  contestState = req.cookies.contestState
+  state = 'DELETE FROM `contestant` WHERE `id`= ?;'
+  db.query(state, [id], (err, result) => {
+    res.redirect(`/admin/contest/${contestState}`)
+  })
 })
 
 module.exports = router

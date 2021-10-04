@@ -155,6 +155,7 @@
                       <div class="card-body">
                         <h4 class="card-title">Basic Table</h4>
                         <p class="card-description"></p>
+                        <div class="table-responsive">
                         <table class="table">
                           <thead>
                             <tr>
@@ -166,16 +167,17 @@
                               <tr>
                                 <td><%= result[index].name %> </td>
                                 <td></td>
-                                <td> <a href="/admin/contest/<%- result[index].id %> "><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
+                                <td> <a href="/admin/contest/<%- result[index].id %>"><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
                                   Edit
                                 </button></a></td>
-                                <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
+                                <td> <a href="/admin/contest/delete-contest/<%- result[index].id %>"><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
                                   Delete
-                                </button></td>
+                                </button></a></td>
                               </tr>
                             <% } %>                                                      
                           </tbody>
                         </table>
+                      </div>
                       </div>
                     </div>
                   </div>

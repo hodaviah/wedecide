@@ -101,3 +101,11 @@ CREATE TABLE `wedecide`.`contest_voter` (
     `vote` TINYINT(2) NOT NULL DEFAULT '0' ,
     PRIMARY KEY (`id`)) 
     ENGINE = InnoDB;
+
+ALTER TABLE `wedecide`.`election`
+  ADD paid TINYINT(2) NOT NULL DEFAULT '0'
+    AFTER description;
+
+ALTER TABLE `wedecide`.`contest`
+  ADD paid TINYINT(2) NOT NULL DEFAULT '0'
+    AFTER description;

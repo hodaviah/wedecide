@@ -170,6 +170,7 @@
                   <div class="card-body">
                     <h4 class="card-title">Category</h4>
                     <p class="card-description"></p>
+                    <div class="table-responsive">
                     <table class="table">
                       <thead>
                         <tr>
@@ -181,14 +182,17 @@
                           <tr>
                             <td><%= result[1][index].name %></td>                          
                             <td>
+                              <a href="/admin/contest/delete-category/<%= result[1][index].id %>">
                               <button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
                                 Delete
                               </button>
+                              </a>
                             </td>                          
                           </tr>
                         <% } %>                                                
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -225,6 +229,7 @@
                   <div class="card-body">
                     <h4 class="card-title">Contestants</h4>
                     <p class="card-description"></p>
+                    <div class="table-responsive">
                     <table class="table">
                       <thead>
                         <tr>
@@ -243,14 +248,16 @@
                             <% } %>
                             <% } %></td>
                             <td><%= result[2][index].vote %></td>
-                            <td><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
+                            <td> <a href="/admin/contest/delete-contestant/<%= result[2][index].id %>"><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
                               Delete
                             </button>
+                            </a>
                             </td>                          
                           </tr>
                         <% } %>                                                
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -260,6 +267,7 @@
                   <div class="card-body">
                     <h4 class="card-title">Voters Table</h4>
                     <p class="card-description"></p>
+                    <div class="table-responsive">
                     <table class="table">
                       <thead>
                         <tr>
@@ -298,6 +306,7 @@
                         </tr>                        
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 </div>
               </div>
