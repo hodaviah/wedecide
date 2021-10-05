@@ -166,14 +166,25 @@
                             <% for( let index = 0; index < result.length; index++ ) { %>
                               <tr>
                                 <td><%= result[index].name %> </td>
-                                <td></td>
+                                
                                 <td> <a href="/admin/contest/<%- result[index].id %>"><button type="button" class="btn btn-gradient-warning btn-rounded btn-fw">
                                   Edit
-                                </button></a></td>
+                                </button></a></td>                                                                
+
                                 <td> <a href="/admin/contest/delete-contest/<%- result[index].id %>"><button type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
                                   Delete
                                 </button></a></td>
-                              </tr>
+                              
+                                <td>
+                                  <% if (result[index].paid == 0) { %>
+                                    <a class="text-danger" href="/admin/contest/pay/<%- result[index].id %>"> Pay Now </a>
+                                  <% } else if (result[index].paid == 1) { %>
+                                    <label> Paid </label>
+                                  <% } %>                                   
+                                </td>
+                              
+                              </tr>                                                            
+                              
                             <% } %>                                                      
                           </tbody>
                         </table>

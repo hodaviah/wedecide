@@ -1,6 +1,11 @@
 const router = require('express').Router()
 const jwt = require('jsonwebtoken')
 const express = require('express')
+const _ = require('lodash')
+const request = require('request')
+const { initializePayment, verifyPayment } = require('../config/paystack')(
+  request,
+)
 
 const verify = require('../config/validateAdmin')
 const db = require('../database/confix')
@@ -121,7 +126,7 @@ router.post('/create-election', verify, (req, res) => {
 router.get('/manage-election', verify, (req, res) => {
   token = req.cookies.auth
   user_id = jwt.decode(token).id
-  state1 = 'SELECT `id`, `name`, `price` FROM `election` WHERE admin_id = ?'
+  state1 = 'SELECT * FROM `election` WHERE admin_id = ?'
 
   try {
     db.query(state1, [user_id], (err, result) => {
@@ -168,7 +173,7 @@ router.post('/create-contest', (req, res) => {
 router.get('/manage-contest', verify, (req, res) => {
   token = req.cookies.auth
   user_id = jwt.decode(token).id
-  state1 = 'SELECT `id`, `name`, `price` FROM `contest` WHERE admin_id = ?'
+  state1 = 'SELECT * FROM `contest` WHERE admin_id = ?'
 
   try {
     db.query(state1, [user_id], (err, result) => {
@@ -207,6 +212,81 @@ router.get('/contest/:id', verify, (req, res) => {
     //console.log(result)
     res.render('admin_contest', { result })
   })
+})
+
+router.get('/contest/pay/:id', verify, (req, res) => {
+  id = req.params.id
+  res.cookie('contestPaid', id)
+  res.render('payment_contest_form')
+})
+
+router.post('/contest/pay', verify, (req, res) => {
+  const form = _.pick(req.body, ['amount', 'email', 'full_name'])
+  form.metadata = {
+    full_name: form.full_name,
+  }
+  form.amount = 10000 * 100
+
+  initializePayment(form, (error, body) => {
+    if (error) {
+      //handle errors
+      res.cookie('contestPaid', null)
+      console.log(error)
+      return res.redirect('/admin/error')
+      return
+    }
+    response = JSON.parse(body)
+    res.redirect(response.data.authorization_url)
+  })
+})
+
+router.get('/paystack/callback', verify, (req, res) => {
+  token = req.cookies.auth
+  user_id = jwt.decode(token).id
+  const contest_id = req.cookies.contestPaid
+  //const election_id = req.cookies.electionPaid
+
+  const ref = req.query.reference
+  verifyPayment(ref, (error, body) => {
+    if (error) {
+      //handle errors appropriately
+      console.log(error)
+      return res.redirect('/admin/error')
+    }
+    response = JSON.parse(body)
+
+    const data = _.at(response.data, [
+      'reference',
+      'amount',
+      'customer.email',
+      'metadata.full_name',
+    ])
+
+    ;[reference, amount, email, full_name] = data
+
+    if (contest_id != null) {
+      stateC0 =
+        'INSERT INTO `receipt` (`ref`, `admin_id`, `contest_id`, `fullname`, `email`) VALUES (?,?,?,?,?);'
+      stateC1 = 'UPDATE `contest` Set `paid` = 1 Where `id` = ?;'
+      stateC = stateC0 + stateC1
+      db.query(
+        stateC,
+        [reference, user_id, contest_id, full_name, email, contest_id],
+        (err, result) => {
+          res.cookie('contestPaid', null)
+          res.redirect('/admin/success')
+        },
+      )
+    }
+  })
+})
+
+router.get('/success', verify, (req, res) => {
+  res.render('success_page')
+})
+
+router.get('/error', verify, (req, res) => {
+  res.render('error_page')
 })
 
 //*************** Handle Add Poll ***********/

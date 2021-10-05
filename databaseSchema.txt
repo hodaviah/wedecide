@@ -1,4 +1,4 @@
-// Admin 
+# Admin 
 CREATE TABLE `wedecide`.`admin` ( 
     `id` INT(11) NULL AUTO_INCREMENT , 
     `name` VARCHAR(50) NOT NULL , 
@@ -10,7 +10,7 @@ CREATE TABLE `wedecide`.`admin` (
     UNIQUE `ind_email` (`email`)) 
     ENGINE = InnoDB;
 
-// Election
+# Election
 CREATE TABLE `wedecide`.`election` ( 
     `id` INT(11) NOT NULL AUTO_INCREMENT , 
     `admin_id` INT(11) NOT NULL , 
@@ -25,7 +25,7 @@ CREATE TABLE `wedecide`.`election` (
     UNIQUE `ind_elect_name` (`name`)) 
     ENGINE = InnoDB;
 
-// Poll
+# Poll
 CREATE TABLE `wedecide`.`poll` ( 
     `id` INT(11) NOT NULL AUTO_INCREMENT , 
     `election_id` INT(11) NOT NULL , 
@@ -33,7 +33,7 @@ CREATE TABLE `wedecide`.`poll` (
     PRIMARY KEY (`id`)) 
     ENGINE = InnoDB;
 
-// Candidate
+# Candidate
 CREATE TABLE `wedecide`.`candidate` ( 
     `id` INT(11) NOT NULL AUTO_INCREMENT ,
     `election_id` INT(11) NOT NULL ,  
@@ -43,7 +43,7 @@ CREATE TABLE `wedecide`.`candidate` (
     PRIMARY KEY (`id`)) 
     ENGINE = InnoDB;
 
-// Voters
+# Voters
 CREATE TABLE `wedecide`.`voter` ( 
     `id` INT(11) NOT NULL AUTO_INCREMENT , 
     `username` VARCHAR(100) NOT NULL , 
@@ -57,7 +57,7 @@ CREATE TABLE `wedecide`.`voter` (
     PRIMARY KEY (`id`)) 
     ENGINE = InnoDB;
 
-// contest
+# contest
 CREATE TABLE `wedecide`.`contest` ( 
     `id` INT(11) NOT NULL AUTO_INCREMENT , 
     `admin_id` INT(11) NOT NULL , 
@@ -71,7 +71,7 @@ CREATE TABLE `wedecide`.`contest` (
     ENGINE = InnoDB;
 
 
-// Contestant_Poll
+# Contestant_Poll
 CREATE TABLE `wedecide`.`contestant_poll` ( 
     `id` INT(11) NOT NULL AUTO_INCREMENT , 
     `contest_id` INT(11) NOT NULL , 
@@ -79,7 +79,7 @@ CREATE TABLE `wedecide`.`contestant_poll` (
     PRIMARY KEY (`id`)) 
     ENGINE = InnoDB;
 
-// Contestant
+# Contestant
 CREATE TABLE `wedecide`.`contestant` ( 
     `id` INT(11) NOT NULL AUTO_INCREMENT ,
     `contest_id` INT(11) NOT NULL ,  
@@ -109,3 +109,22 @@ ALTER TABLE `wedecide`.`election`
 ALTER TABLE `wedecide`.`contest`
   ADD paid TINYINT(2) NOT NULL DEFAULT '0'
     AFTER description;
+
+# Payment Receipt 
+CREATE TABLE `wedecide`.`receipt` ( 
+    `id` INT(11) NOT NULL AUTO_INCREMENT ,
+    `ref` VARCHAR(100) NOT NULL ,
+    `admin_id` INT(11) NOT NULL ,
+    `election_id` INT(11) NOT NULL DEFAULT '0',
+    `contest_id` INT(11) NOT NULL DEFAULT '0',
+    `date` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ,     
+    PRIMARY KEY (`id`)) 
+    ENGINE = InnoDB;
+
+ALTER TABLE `wedecide`.`receipt`
+  ADD email VARCHAR(200) NOT NULL DEFAULT 'Not Mail!'
+    AFTER contest_id;
+
+ALTER TABLE `wedecide`.`receipt`
+  ADD fullname VARCHAR(200) NOT NULL DEFAULT 'No Name!'
+    AFTER contest_id;

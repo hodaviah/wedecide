@@ -60,6 +60,9 @@ app.use('/admin/election', admin_election)
 const admin_contest = require('./routes/admin')
 app.use('/admin/contest', admin_contest)
 
+const admin_contest_pay = require('./routes/admin')
+app.use('/admin/contest/pay', admin_contest_pay)
+
 const voter = require('./routes/voter')
 app.use('/voter', voter)
 

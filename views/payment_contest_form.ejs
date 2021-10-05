@@ -37,36 +37,19 @@
                   Sign up to vote, it is easy. It only takes a few steps
                 </h6>
                 <form
-                  action="/voter/contest-register"
+                  action="/admin/contest/pay"
                   method="POST"
                   
                   class="pt-3"
-                >
-                  <div class="form-group">
-                    <select
-                      name="contest"
-                      class="form-control form-control-lg"
-                      id="exampleFormControlSelect2"
-                    >
-                      <% for( let index = 0; index < result.length; index++ ) {
-                      %>
-                      <option value="<%= result[index].id %>/<%= result[index].price %>/<%= result[index].name %>">
-                        <%= result[index].name %> | Fees: N<%=
-                        result[index].price %>
-                      </option>
-                      
-                      <% } %>
-                    </select>
-                  </div>
-
+                >                  
                   <div class="form-group">
                     <input
                       required
-                      name="name"
+                      name="full_name"
                       type="text"
                       class="form-control form-control-lg"
                       id="exampleInputUsername1"
-                      placeholder="Name"
+                      placeholder="fullname"
                     />
                   </div>
                   <div class="form-group">
@@ -78,23 +61,26 @@
                       id="exampleInputEmail1"
                       placeholder="Email"
                     />
-                  </div>
+                  </div>                                    
                   <div class="form-group">
-                    <input
-                      required
-                      name="phone"
-                      type="number"
-                      class="form-control form-control-lg"
-                      id="exampleInputPhone"
-                      placeholder="Phone"
+                    <label for="amount">Amount</label>
+                    <input                    
+                      disabled
+                      name="amount"
+                      type="email"
+                      class="text-success form-control form-control-lg"
+                      id="exampleInputAmount"
+                      placeholder="N10000"
                     />
                   </div>                  
+                  
+                  
                   <div class="mt-3">
                     <button
                       type="submit"
                       class="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn"
                     >
-                      SIGN UP
+                      PAY
                     </button>
                   </div>
                   <div class="text-center mt-4 font-weight-light">
