@@ -48,7 +48,8 @@ const { render } = require('ejs')
 
 //****************To Register to vote for an election */
 router.get('/register-election', (req, res) => {
-  state1 = 'SELECT `name`, `price` FROM `election`'
+  state1 =
+    'SELECT * FROM `election`WHERE (CURRENT_TIMESTAMP BETWEEN start_date AND end_date) AND paid = 1'
   db.query(state1, (err, result) => {
     res.render('vote_register', { result })
   })
@@ -72,8 +73,10 @@ router.get('/webcam', (req, res) => {
 
 //****************To Register to vote for an contest */
 router.get('/register-contest', (req, res) => {
-  state1 = 'SELECT `id`, `name`, `price` FROM `contest`'
+  state1 =
+    'SELECT * FROM `contest`WHERE (CURRENT_TIMESTAMP BETWEEN start_date AND end_date) AND paid = 1'
   db.query(state1, (err, result) => {
+    console.log(result)
     res.render('contest_register', { result })
   })
 })

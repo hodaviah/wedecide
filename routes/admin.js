@@ -220,6 +220,12 @@ router.get('/contest/pay/:id', verify, (req, res) => {
   res.render('payment_contest_form')
 })
 
+router.get('/election/pay/:id', verify, (req, res) => {
+  id = req.params.id
+  res.cookie('electionPaid', id)
+  res.render('payment_contest_form')
+})
+
 router.post('/contest/pay', verify, (req, res) => {
   const form = _.pick(req.body, ['amount', 'email', 'full_name'])
   form.metadata = {
@@ -231,6 +237,7 @@ router.post('/contest/pay', verify, (req, res) => {
     if (error) {
       //handle errors
       res.cookie('contestPaid', null)
+      res.cookie('electionPaid', null)
       console.log(error)
       return res.redirect('/admin/error')
       return
@@ -244,11 +251,13 @@ router.get('/paystack/callback', verify, (req, res) => {
   token = req.cookies.auth
   user_id = jwt.decode(token).id
   const contest_id = req.cookies.contestPaid
-  //const election_id = req.cookies.electionPaid
+  const election_id = req.cookies.electionPaid
 
   const ref = req.query.reference
   verifyPayment(ref, (error, body) => {
     if (error) {
+      res.cookie('contestPaid', null)
+      res.cookie('electionPaid', null)
       //handle errors appropriately
       console.log(error)
       return res.redirect('/admin/error')
@@ -274,6 +283,19 @@ router.get('/paystack/callback', verify, (req, res) => {
         [reference, user_id, contest_id, full_name, email, contest_id],
         (err, result) => {
           res.cookie('contestPaid', null)
+          res.redirect('/admin/success')
+        },
+      )
+    } else if (election_id != null) {
+      stateC0 =
+        'INSERT INTO `receipt` (`ref`, `admin_id`, `election_id`, `fullname`, `email`) VALUES (?,?,?,?,?);'
+      stateC1 = 'UPDATE `election` Set `paid` = 1 Where `id` = ?;'
+      stateC = stateC0 + stateC1
+      db.query(
+        stateC,
+        [reference, user_id, election_id, full_name, email, election_id],
+        (err, result) => {
+          res.cookie('electionPaid', null)
           res.redirect('/admin/success')
         },
       )
