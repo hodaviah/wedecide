@@ -1,7 +1,11 @@
 const router = require('express').Router()
 const express = require('express')
 const multer = require('multer')
-const Flutterwave = require('flutterwave-node-v3')
+const sharp = require('sharp')
+const fs = require('fs')
+
+const storage = multer.memoryStorage()
+const upload = multer({ storage })
 const open = require('open')
 const { v4: uuidv4 } = require('uuid')
 const nodemailer = require('nodemailer')
@@ -21,26 +25,23 @@ var transporter = nodemailer.createTransport(
   }),
 )
 
-// For Flutterwave
-const flw = new Flutterwave(
-  'FLWPUBK-55d19607176ee44d7bd9ba125f5fddfb-X',
-  'FLWSECK-d24f99a659db328bff380bff23059ebc-X',
-)
-
 router.use(express.static('public'))
-
-// For Uploading files
-let storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './uploads')
-  },
-  filename: function (req, file, cb) {
-    let extArray = file.mimetype.split('/')
-    let extension = extArray[extArray.length - 1]
-    cb(null, file.fieldname + '-' + Date.now() + '.' + extension)
-  },
-})
-const upload = multer({ storage: storage })
+comment = {
+  //TODO: Multer
+  // For Uploading files
+  // let storage = multer.diskStorage({
+  //   destination: function (req, file, cb) {
+  //     cb(null, './public/uploads')
+  //   },
+  //   filename: function (req, file, cb) {
+  //     let extArray = file.mimetype.split('/')
+  //     let extension = extArray[extArray.length - 1]
+  //     cb(null, file.fieldname + '-' + Date.now() + '.' + extension)
+  //   },
+  // })
+  // const upload = multer({ storage: storage })
+  //TODO: End Multer
+}
 
 // Datebase
 const db = require('../database/confix')
@@ -55,8 +56,59 @@ router.get('/register-election', (req, res) => {
   })
 })
 
-router.post('/register', upload.single('image'), (req, res) => {
-  console.log(req.body, req.file)
+router.post('/register-election', upload.single('image'), async (req, res) => {
+  const { election, username, email, phone, password } = req.body
+
+  fs.access('./public/uploads', (error) => {
+    if (error) {
+      fs.mkdirSync('./public/uploads')
+    }
+  })
+  const userValidStm =
+    'SELECT `username` FROM `voter` WHERE `username` = ? AND `election_id` = ?'
+  db.query(userValidStm, [username, election], async (err, result) => {
+    if (result.length !== 0) {
+      res.redirect('/voter/register-election')
+    } else {
+      const vouchar = `ev-${uuidv4()}`
+      insertStatement =
+        'Insert Into `voter` ( `username`, `email`, `password`, `voucher`, `phone`, `election_id`, `face_path`) VALUES (?,?,?,?,?,?,?)'
+
+      const { buffer, originalname } = req.file
+      const timestamp = new Date().toISOString()
+      const ref = `${username}-IMG-${timestamp}.jpeg`
+      await sharp(buffer)
+        .jpeg({ mozjpeg: true })
+        .toFile('./public/uploads/' + ref)
+
+      file_path = 'uploads/' + ref
+
+      db.query(insertStatement, [
+        username,
+        email,
+        password,
+        vouchar,
+        phone,
+        election,
+        file_path,
+      ])
+      var mailOptions = {
+        from: 'wedecideinfo@gmail.com',
+        to: email,
+        subject: 'WeDecide Login Details',
+        text: `Good Day ${username}! \nYou can now partcipate in the election: ${election} by voting for your favorite contestant , Here is your vouchar \n${vouchar}`,
+      }
+
+      transporter.sendMail(mailOptions, function (error, info) {
+        if (error) {
+          console.log(error)
+        } else {
+          console.log('Email sent: ' + info.response)
+          res.redirect('/voter/vote-election')
+        }
+      })
+    }
+  })
 })
 
 //************To Login befor you vote for an election */
@@ -117,55 +169,6 @@ router.post('/contest-register', (req, res) => {
       })
     },
   )
-
-  //FIXME
-  // const payload = {
-  //   card_number: cardNo,
-  //   cvv: cvv,
-  //   expiry_month: expiry_month,
-  //   expiry_year: expiry_year,
-  //   currency: 'NGN',
-  //   amount: amount,
-  //   redirect_url: 'https://www.google.com',
-  //   fullname: cardName,
-  //   email: email,
-  //   phone_number: phone,
-  //   enckey: 'd24f99a659db2da72a7516f6',
-  //   tx_ref: vouchar,
-  // }
-
-  // const chargeCard = async () => {
-  //   try {
-  //     const response = await flw.Charge.card(payload)
-  //     console.log(response)
-  //     if (response.meta.authorization.mode === 'pin') {
-  //       let payload2 = payload
-  //       payload2.authorization = {
-  //         mode: 'pin',
-  //         fields: ['pin'],
-  //         pin: 3310,
-  //       }
-  //       const reCallCharge = await flw.Charge.card(payload2)
-
-  //       const callValidate = await flw.Charge.validate({
-  //         otp: '12345',
-  //         flw_ref: reCallCharge.data.flw_ref,
-  //       })
-  //       console.log(callValidate)
-  //     }
-  //     if (response.meta.authorization.mode === 'redirect') {
-  //       var url = response.meta.authorization.redirect
-  //       open(url)
-  //     }
-
-  //     console.log(response)
-  //   } catch (error) {
-  //     console.log(error)
-  //   }
-  // }
-
-  // chargeCard()
-  //FIXME SOON
 })
 
 //***********************Route to in put the vouchar */

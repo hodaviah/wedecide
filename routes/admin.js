@@ -137,11 +137,13 @@ router.get('/manage-election', verify, (req, res) => {
   }
 })
 
+//************** Route To Get To All the Contest ************/
 router.get('/create-contest', (req, res) => {
   res.render('create_contest')
 })
 
-router.post('/create-contest', (req, res) => {
+//*******Page to create contest */
+router.post('/create-contest', verify, (req, res) => {
   const { name, esd, eed, price, desp } = req.body
   token = req.cookies.auth
   user_id = jwt.decode(token).id
@@ -170,6 +172,7 @@ router.post('/create-contest', (req, res) => {
   }
 })
 
+//*******Page to manage contest Edit, Delete Payment and Result */
 router.get('/manage-contest', verify, (req, res) => {
   token = req.cookies.auth
   user_id = jwt.decode(token).id
@@ -214,18 +217,21 @@ router.get('/contest/:id', verify, (req, res) => {
   })
 })
 
+//*********Page to pay a contest */
 router.get('/contest/pay/:id', verify, (req, res) => {
   id = req.params.id
   res.cookie('contestPaid', id)
   res.render('payment_contest_form')
 })
 
+//**********Page To Pay an election */
 router.get('/election/pay/:id', verify, (req, res) => {
   id = req.params.id
   res.cookie('electionPaid', id)
   res.render('payment_contest_form')
 })
 
+//***********Initialize PayStack Payment System */
 router.post('/contest/pay', verify, (req, res) => {
   const form = _.pick(req.body, ['amount', 'email', 'full_name'])
   form.metadata = {
@@ -247,6 +253,7 @@ router.post('/contest/pay', verify, (req, res) => {
   })
 })
 
+//********Handles Paystack Callback  */
 router.get('/paystack/callback', verify, (req, res) => {
   token = req.cookies.auth
   user_id = jwt.decode(token).id
@@ -303,10 +310,12 @@ router.get('/paystack/callback', verify, (req, res) => {
   })
 })
 
+//**************Success Page After Payment */
 router.get('/success', verify, (req, res) => {
   res.render('success_page')
 })
 
+//**************Error Page After Payment */
 router.get('/error', verify, (req, res) => {
   res.render('error_page')
 })

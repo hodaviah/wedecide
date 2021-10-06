@@ -128,3 +128,9 @@ ALTER TABLE `wedecide`.`receipt`
 ALTER TABLE `wedecide`.`receipt`
   ADD fullname VARCHAR(200) NOT NULL DEFAULT 'No Name!'
     AFTER contest_id;
+
+ALTER TABLE `wedecide`.`voter`
+  ADD voucher VARCHAR(200) NOT NULL DEFAULT 'No Voucher!'
+    AFTER password;
+
+ALTER TABLE voter DROP COLUMN paid_fees;
