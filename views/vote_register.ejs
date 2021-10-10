@@ -33,7 +33,7 @@
                 <div class="form-group">
                   <select name="election" class="form-control form-control-lg" id="exampleFormControlSelect2">
                     <% for( let index = 0; index < result.length; index++ ) { %>
-                      <option value="<%= result[index].id %>"><%= result[index].name %> | Fees: N<%= result[index].price %>  </option>
+                      <option value="<%= result[index].id %>/<%= result[index].name %>"><%= result[index].name %> | Fees: N<%= result[index].price %>  </option>
                       <% } %>
                                                     
                   </select>

@@ -6,12 +6,12 @@ const fs = require('fs')
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage })
-const open = require('open')
 const { v4: uuidv4 } = require('uuid')
 const nodemailer = require('nodemailer')
 const jwt = require('jsonwebtoken')
 const smtpTransport = require('nodemailer-smtp-transport')
 const verify = require('../config/validateContestVoter')
+const verifyElection = require('../config/validateElectionVote')
 
 // Setting Up For Mailling
 var transporter = nodemailer.createTransport(
@@ -58,7 +58,7 @@ router.get('/register-election', (req, res) => {
 
 router.post('/register-election', upload.single('image'), async (req, res) => {
   const { election, username, email, phone, password } = req.body
-
+  const detailArr = election.split('/')
   fs.access('./public/uploads', (error) => {
     if (error) {
       fs.mkdirSync('./public/uploads')
@@ -66,7 +66,7 @@ router.post('/register-election', upload.single('image'), async (req, res) => {
   })
   const userValidStm =
     'SELECT `username` FROM `voter` WHERE `username` = ? AND `election_id` = ?'
-  db.query(userValidStm, [username, election], async (err, result) => {
+  db.query(userValidStm, [username, detailArr[0]], async (err, result) => {
     if (result.length !== 0) {
       res.redirect('/voter/register-election')
     } else {
@@ -89,14 +89,14 @@ router.post('/register-election', upload.single('image'), async (req, res) => {
         password,
         vouchar,
         phone,
-        election,
+        detailArr[0],
         file_path,
       ])
       var mailOptions = {
         from: 'wedecideinfo@gmail.com',
         to: email,
         subject: 'WeDecide Login Details',
-        text: `Good Day ${username}! \nYou can now partcipate in the election: ${election} by voting for your favorite contestant , Here is your vouchar \n${vouchar}`,
+        text: `Good Day ${username}! \nYou can now partcipate in the election: ${detailArr[1]} by voting for your favorite candidate, Here is your details \nUsername: ${username} \nPassword: ${password} \nvouchar: \n${vouchar}`,
       }
 
       transporter.sendMail(mailOptions, function (error, info) {
@@ -113,14 +113,57 @@ router.post('/register-election', upload.single('image'), async (req, res) => {
 
 //************To Login befor you vote for an election */
 router.get('/vote-election', (req, res) => {
-  state1 = 'SELECT `name`, `price` FROM `election`'
+  state1 = 'SELECT `id`, `name`, `price` FROM `election`'
   db.query(state1, (err, result) => {
     res.render('vote_election', { result })
   })
 })
 
-router.get('/webcam', (req, res) => {
-  res.render('webcam')
+router.post('/vote-election', (req, res) => {
+  const election = req.body.election
+  const details = election.split('/')
+  const username = req.body.username
+  const password = req.body.password
+
+  const voterValidStm =
+    'SELECT `id`, `election_id`,`username`, `password` FROM `voter` WHERE `username` = ? AND `election_id` = ?;'
+
+  db.query(voterValidStm, [username, details[0]], function (err, result) {
+    if (err) throw err
+
+    if (result.length === 0) {
+      state1 = 'SELECT `id`, `name`, `price` FROM `election`'
+      db.query(state1, (err, result) => {
+        res.render('vote_election', { result })
+      })
+    } else if (result[0].password !== password) {
+      state1 = 'SELECT `id`, `name`, `price` FROM `election`'
+      db.query(state1, (err, result) => {
+        res.render('vote_election', { result })
+      })
+    } else {
+      const token = jwt.sign(
+        {
+          id: result[0].id,
+          username: result[0].username,
+          election_id: result[0].election_id,
+        },
+        'secret-hack-election',
+      )
+      res.cookie('election_auth', token).redirect('/voter/face-check')
+    }
+  })
+})
+
+router.get('/face-check', verifyElection, async (req, res) => {
+  token = req.cookies.election_auth
+  const voter_id = jwt.decode(token).id
+  const voters_username = jwt.decode(token).username
+  const election_id = jwt.decode(token).election_id
+  state0 = 'SELECT * FROM `voter` WHERE id = ?;'
+  db.query(state0, [voter_id], (err, result) => {
+    res.render('face_check', { result })
+  })
 })
 
 //****************To Register to vote for an contest */
@@ -205,20 +248,68 @@ router.post('/contest-vote', (req, res) => {
 })
 
 //**********************Route where they will cast vote (Election) */
-router.get('/election-center', (req, res) => {
-  token = req.cookies.auth
-  id = jwt.decode(token).id
-  voter_id = jwt.decode(token).voter_id
-  console.log(voter_id)
+router.get('/election-center', verifyElection, (req, res) => {
+  token = req.cookies.election_auth
+  const voter_id = jwt.decode(token).id
+  const voters_username = jwt.decode(token).username
+  const election_id = jwt.decode(token).election_id
+
   state0 = 'SELECT `id`, `name` FROM `election` WHERE `id` = ?;'
   state1 = 'SELECT * FROM `poll` WHERE `election_id` = ?;'
   state2 = 'SELECT * FROM `candidate` WHERE candidate.election_id = ?;'
 
   statement = state0 + state1 + state2
-  db.query(statement, [id, id, id], (err, result) => {
-    console.log(result)
-    res.render('vote_center', { result })
-  })
+  db.query(
+    statement,
+    [election_id, election_id, election_id],
+    (err, result) => {
+      res.render('vote_center', { result })
+    },
+  )
+})
+
+router.post('/election-center', verifyElection, (req, res) => {
+  token = req.cookies.election_auth
+  const voter_id = jwt.decode(token).id
+  const voters_username = jwt.decode(token).username
+  const election_id = jwt.decode(token).election_id
+  var newdata = Object.values(req.body)
+  console.log(newdata)
+  if (newdata.length === 0) {
+    res.send('Vote for at least one contestant')
+  } else {
+    for (let i = 0; i < newdata.length; i++) {
+      state = 'Select `vote` From `candidate` Where `id` = ?;'
+      db.query(state, [newdata[i]], (err, result) => {
+        var res = parseInt(result[0].vote)
+        res = res + 1
+
+        vote_state = 'Update `candidate` Set `vote` = ? Where `id` = ?;'
+        db.query(vote_state, [res, newdata[i]], (err, result) => {})
+      })
+    }
+    upstate = 'Update `voter` Set `vote` = 1 Where `id` = ?'
+    db.query(upstate, [voter_id], (err, result) => {
+      if (err) throw err
+
+      // var mailOptions = {
+      //   from: 'wedecideinfo@gmail.com',
+      //   to: voter_email,
+      //   subject: 'WeDecide Login Details',
+      //   text: `Good Day ${voters_username}! \nThank You for partcipating in the contest by voting for your favorite candidate.`,
+      // }
+
+      // transporter.sendMail(mailOptions, function (error, info) {
+      //   if (error) {
+      //     console.log(error)
+      //   } else {
+      //     console.log('Email sent: ' + info.response)
+      //   }
+      // })
+    })
+    res.cookie('election_auth', null)
+    res.redirect('/voter/thank-you')
+  }
 })
 
 //**************** Route where they will cast vote (Contest)*/
@@ -238,7 +329,7 @@ router.get('/contest-center', verify, (req, res) => {
 })
 
 //******************People vote for contestant */
-router.post('/contest-center', (req, res) => {
+router.post('/contest-center', verify, (req, res) => {
   token = req.cookies.contest_auth
   voter_id = jwt.decode(token).voter_id
   voter_name = jwt.decode(token).voter_name

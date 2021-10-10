@@ -47,7 +47,10 @@
                 <div class="card-body">
                   <h4 class="card-title"><%= result[0][0].name %> </h4>
                   <p class="card-description"></p>
-                  <form class="forms-sample">
+                  <form
+                  action="/voter/election-center"
+                  method="POST" 
+                  class="forms-sample">
                     <% for( let index = 0; index < result[1].length; index++ ) { %>
                       <div class="form-group">
                         <label for="exampleInputName1"><%= result[1][index].name %> </label>

@@ -138,7 +138,7 @@ router.get('/manage-election', verify, (req, res) => {
 })
 
 //************** Route To Get To All the Contest ************/
-router.get('/create-contest', (req, res) => {
+router.get('/create-contest', verify, (req, res) => {
   res.render('create_contest')
 })
 
