@@ -35,14 +35,13 @@
         <!-- partial -->
         <div class="main-panel col-lg-12 col-12">
           <div id="container" class="content-wrapper">
-            
             <div class="row">
               <div class="col-md-12 grid-margin stretch-card">
                 <div class="card">
                   <div class="card-body">
-                    <h4 class="card-title">Facial Verification</h4>                    
+                    <h4 class="card-title">Facial Verification</h4>
                     <p>
-                      Please Upload A Recent Image of You 
+                      Please Upload A Recent Image of You
                     </p>
                   </div>
                 </div>
@@ -103,8 +102,36 @@
       var innerDiv = document.createElement('div')
       innerDiv.className = 'row'
 
+      // Div For Loading
       var loadingDiv = document.createElement('div')
       loadingDiv.className = 'loader'
+
+      // Div for Face Dont Match
+      var dontRowMatchDiv = document.createElement('div')
+      var strenghtDiv = document.createElement('div')
+      var card = document.createElement('div')
+      var cardBody = document.createElement('div')
+      faceH4 = document.createElement('h4')
+
+      dontRowMatchDiv.className = 'row'
+      strenghtDiv.className = 'col-md-12 grid-margin stretch-card'
+      card.className = 'card'
+      cardBody.className = 'card-body'
+      faceH4.className = 'text-danger'
+      faceH4.innerHTML = "Face Don't Match"
+
+      function faceDontMatch() {
+        container.removeChild(loadingDiv)
+        dontRowMatchDiv.appendChild(strenghtDiv)
+        strenghtDiv.appendChild(card)
+        card.appendChild(cardBody)
+        cardBody.appendChild(faceH4)
+        container.appendChild(dontRowMatchDiv)
+      }
+
+      function reDir() {
+        window.location.href = '/voter/vote-election'
+      }
 
       imgInp.onchange = (evt) => {
         const [file] = imgInp.files
@@ -113,13 +140,19 @@
           button.onclick = justWork()
           innerDiv.appendChild(button)
           container.appendChild(innerDiv)
-          container.appendChild(loadingDiv)          
+          container.appendChild(loadingDiv)
         }
       }
 
       const MODEL_URL = './models'
 
       async function justWork() {
+        try {
+          container.removeChild(dontRowMatchDiv)
+        } catch (error) {
+          console.log(error)
+        }
+
         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
         await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
         await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL)
@@ -151,8 +184,9 @@
         if (dis <= 0.4) {
           container.removeChild(loadingDiv)
           window.location.href = '/voter/election-center'
-        }else{
-          container.removeChild(loadingDiv)
+        } else {
+          faceDontMatch()
+          window.setTimeout(reDir, 5000)
         }
       }
     </script>
