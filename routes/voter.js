@@ -50,7 +50,7 @@ const { render } = require('ejs')
 //****************To Register to vote for an election */
 router.get('/register-election', (req, res) => {
   state1 =
-    'SELECT * FROM `election`WHERE (CURRENT_TIMESTAMP BETWEEN start_date AND end_date);'
+    'SELECT * FROM `election`WHERE (CURRENT_TIMESTAMP BETWEEN `election`.`start_date` AND `election`.`end_date`)'
   db.query(state1, (err, result) => {
     res.render('vote_register', { result })
   })
