@@ -17,7 +17,7 @@ router.get('/', verify, (req, res, next) => {
   token = req.cookies.auth
   user_id = jwt.decode(token).id
   state0 =
-    'SELECT `election`.`id`, `election`.`name`, `election`.`price`, `election`.`start_date`, `election`.`end_date`, count(`poll`.`id`) AS numberOfPoll FROM `election` INNER JOIN `poll` ON `election`.id = `poll`.`election_id` WHERE `election`.`admin_id` = ? group by `election`.`id`;'
+    'SELECT `election`.`id`, `election`.`name`, `election`.`start_date`, `election`.`end_date`, count(`poll`.`id`) AS numberOfPoll FROM `election` INNER JOIN `poll` ON `election`.id = `poll`.`election_id` WHERE `election`.`admin_id` = ? group by `election`.`id`;'
   state1 =
     'SELECT COUNT(*) AS numberOfElection FROM `election` WHERE 	`election`.`admin_id` = ?;'
   state2 =
@@ -83,17 +83,16 @@ router.get('/create-election', verify, (req, res) => {
 
 // ******************* Create Election ***********************//
 router.post('/create-election', verify, (req, res) => {
-  const { name, esd, eed, rsd, red, price, desp } = req.body
+  const { name, esd, eed, rsd, red, desp } = req.body
   token = req.cookies.auth
   user_id = jwt.decode(token).id
-  console.log({ user_id, name, esd, eed, rsd, red, price, desp })
+  console.log({ user_id, name, esd, eed, rsd, red, desp })
   if (
     (typeof name === 'undefined') |
     (typeof esd === 'undefined') |
     (typeof eed === 'undefined') |
     (typeof rsd === 'undefined') |
     (typeof red === 'undefined') |
-    (typeof price === 'undefined') |
     (typeof desp === 'undefined')
   ) {
     res.redirect('/admin/create-election')
@@ -105,17 +104,8 @@ router.post('/create-election', verify, (req, res) => {
         res.redirect('/admin/create-election')
       } else {
         insertStatement =
-          'Insert Into `election` (`admin_id`,`name`, `price`, `start_date`, `end_date`, `reg_start_date`, `reg_end_date`, `description`) VALUES (?,?,?,?,?,?,?,?)'
-        db.query(insertStatement, [
-          user_id,
-          name,
-          price,
-          esd,
-          eed,
-          rsd,
-          red,
-          desp,
-        ])
+          'Insert Into `election` (`admin_id`,`name`, `start_date`, `end_date`, `reg_start_date`, `reg_end_date`, `description`) VALUES (?,?,?,?,?,?,?)'
+        db.query(insertStatement, [user_id, name, esd, eed, rsd, red, desp])
         res.redirect('/admin/manage-election')
       }
     })
@@ -144,15 +134,14 @@ router.get('/create-contest', verify, (req, res) => {
 
 //*******Page to create contest */
 router.post('/create-contest', verify, (req, res) => {
-  const { name, esd, eed, price, desp } = req.body
+  const { name, esd, eed, desp } = req.body
   token = req.cookies.auth
   user_id = jwt.decode(token).id
-  console.log({ user_id, name, esd, eed, price, desp })
+  console.log({ user_id, name, esd, eed, desp })
   if (
     (typeof name === 'undefined') |
     (typeof esd === 'undefined') |
     (typeof eed === 'undefined') |
-    (typeof price === 'undefined') |
     (typeof desp === 'undefined')
   ) {
     res.redirect('/admin/create-contest')
@@ -164,8 +153,8 @@ router.post('/create-contest', verify, (req, res) => {
         res.redirect('/admin/create-election')
       } else {
         insertStatement =
-          'Insert Into `contest` (`admin_id`,`name`, `price`, `start_date`, `end_date`, `description`) VALUES (?,?,?,?,?,?)'
-        db.query(insertStatement, [user_id, name, price, esd, eed, desp])
+          'Insert Into `contest` (`admin_id`,`name`, `start_date`, `end_date`, `description`) VALUES (?,?,?,?,?)'
+        db.query(insertStatement, [user_id, name, esd, eed, desp])
         res.redirect('/admin/manage-contest')
       }
     })
@@ -195,8 +184,10 @@ router.get('/election/:id', verify, (req, res) => {
   state1 = 'SELECT * FROM `poll` WHERE `election_id` = ?;'
   state2 =
     'SELECT * FROM `candidate` WHERE candidate.election_id = ? ORDER BY candidate.poll_id;'
-  statement = state0 + state1 + state2
-  db.query(statement, [id, id, id], (err, result) => {
+  state3 =
+    'SELECT * FROM `voter` WHERE voter.election_id = ? ORDER BY `voter`.`reg_date`;'
+  statement = state0 + state1 + state2 + state3
+  db.query(statement, [id, id, id, id], (err, result) => {
     //console.log(result)
     res.render('admin_election', { result })
   })
@@ -210,8 +201,10 @@ router.get('/contest/:id', verify, (req, res) => {
   state1 = 'SELECT * FROM `contestant_poll` WHERE `contest_id` = ?;'
   state2 =
     'SELECT * FROM `contestant` WHERE contestant.contest_id = ? ORDER BY contestant.poll_id;'
-  statement = state0 + state1 + state2
-  db.query(statement, [id, id, id], (err, result) => {
+  state3 =
+    'SELECT * FROM `contest_voter` WHERE contest_voter.contest_id = ? ORDER BY `contest_voter`.`reg_date`;'
+  statement = state0 + state1 + state2 + state3
+  db.query(statement, [id, id, id, id], (err, result) => {
     //console.log(result)
     res.render('admin_contest', { result })
   })

@@ -134,3 +134,14 @@ ALTER TABLE `wedecide`.`voter`
     AFTER password;
 
 ALTER TABLE voter DROP COLUMN paid_fees;
+ALTER TABLE election DROP COLUMN price;
+ALTER TABLE contest DROP COLUMN price;
+
+ALTER TABLE `wedecide`.`voter`
+  ADD reg_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    AFTER face_path;
+
+ALTER TABLE `wedecide`.`contest_voter`
+  ADD reg_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    AFTER contest_id;
+

@@ -51,10 +51,8 @@
                     
                       <% for( let index = 0; index < result.length; index++ ) {
                       %>
-                      <option value="<%= result[index].id %>/<%= result[index].price %>/<%= result[index].name %>">
-                        <%= result[index].name %> | Fees: N<%=
-                        result[index].price %>
-                      </option>
+                      <option value="<%= result[index].id %>/<%= result[index].name %>">
+                        <%= result[index].name %> </option>
                       
                       <% } %>
                     </select>

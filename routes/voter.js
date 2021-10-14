@@ -50,7 +50,7 @@ const { render } = require('ejs')
 //****************To Register to vote for an election */
 router.get('/register-election', (req, res) => {
   state1 =
-    'SELECT * FROM `election`WHERE (CURRENT_TIMESTAMP BETWEEN `election`.`start_date` AND `election`.`end_date`)'
+    'SELECT * FROM `election`WHERE (CURRENT_TIMESTAMP BETWEEN `election`.`reg_start_date` AND `election`.`reg_end_date`) AND `election`.`paid`= 1'
   db.query(state1, (err, result) => {
     res.render('vote_register', { result })
   })
@@ -113,7 +113,8 @@ router.post('/register-election', upload.single('image'), async (req, res) => {
 
 //************To Login befor you vote for an election */
 router.get('/vote-election', (req, res) => {
-  state1 = 'SELECT `id`, `name`, `price` FROM `election`'
+  state1 =
+    'SELECT * FROM `election`WHERE (CURRENT_TIMESTAMP BETWEEN `election`.`start_date` AND `election`.`end_date`) AND `election`.`paid`= 1'
   db.query(state1, (err, result) => {
     res.render('vote_election', { result })
   })
@@ -169,7 +170,7 @@ router.get('/face-check', verifyElection, async (req, res) => {
 //****************To Register to vote for an contest */
 router.get('/register-contest', (req, res) => {
   state1 =
-    'SELECT * FROM `contest`WHERE (CURRENT_TIMESTAMP BETWEEN start_date AND end_date)'
+    'SELECT * FROM `contest`WHERE (CURRENT_TIMESTAMP BETWEEN `contest`.`start_date` AND `contest`.`end_date`) AND `contest`.`paid`=1'
   db.query(state1, (err, result) => {
     console.log(result)
     res.render('contest_register', { result })
@@ -185,8 +186,7 @@ router.post('/contest-register', (req, res) => {
   expiry_month = expArr[0].trim().toString()
   expiry_year = expArr[1].trim().toString()
   contest_id = detailArr[0].trim()
-  amount = detailArr[1].trim().toString()
-  contest_name = detailArr[2].trim()
+  contest_name = detailArr[1].trim()
   const vouchar = `cv-${uuidv4()}`
 
   statement =

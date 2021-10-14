@@ -193,9 +193,9 @@
                                 Delete
                               </button>
                               </a>
-                            </td>                          
+                            </td>
                           </tr>
-                        <% } %>                                                
+                        <% } %>
                       </tbody>
                     </table>
                     </div>
@@ -260,7 +260,7 @@
                             </a>
                             </td>                          
                           </tr>
-                        <% } %>                                                
+                        <% } %>
                       </tbody>
                     </table>
                     </div>
@@ -283,33 +283,21 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr>
-                          <td>Jacob Fold</td>
-                          <td>presidency@gmail.com</td>
-                          <td>
-                            <label class="badge badge-gradient-success">
-                              Voted
-                            </label>
-                          </td>                          
-                        </tr>
-                        <tr>
-                          <td>Isaac</td>
-                          <td>Vice_President@gmail.com</td>
-                          <td>
-                            <label class="badge badge-gradient-danger">
-                              Not Voted
-                            </label>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Abraham</td>
-                          <td>Gen_Sec@gmail.com</td>
-                          <td>
-                            <label class="badge badge-gradient-success">
-                              Voted
-                            </label>
-                          </td>
-                        </tr>                        
+                        <% for( let index = 0; index < result[3].length; index++ ) { %>
+                          <tr>
+                            <td><%= result[3][index].username %></td>
+                            <td><%= result[3][index].email %></td>
+                            <% if (result[3][index].vote == 0) { %>
+                              <td><label class="badge badge-gradient-danger">
+                                Not Voted
+                              </label></td>
+                              <% } else { %>
+                                <td><label class="badge badge-gradient-success">
+                                  Voted
+                                </label></td>
+                            <% } %>
+                          </tr>
+                        <% } %>
                       </tbody>
                     </table>
                   </div>
