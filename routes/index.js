@@ -1,12 +1,8 @@
-const route = require("express").Router()
-const jwt = require("jsonwebtoken")
+const route = require("express").Router();
+const jwt = require("jsonwebtoken");
 
 route.get("/", (req, res, next) => {
-
-    res.render("index", {
-
-    });
-
-})
+	res.render("index", {});
+});
 
 module.exports = route;

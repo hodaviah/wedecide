@@ -1,24 +1,19 @@
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
 
 // middleware for verifying jwt
 module.exports = function auth(req, res, next) {
-  const token = req.cookies.election_auth
-  if (!token)
-    return res.render('vote_election', {
-      flashMessages: {
-        error: 'Access Denied!',
-      },
-    })
+	try {
+		const token = req.cookies.election_auth;
 
-  try {
-    const verified = jwt.verify(token, 'secret-hack-election')
-    req.id = verified
-    next()
-  } catch (err) {
-    res.render('vote_election', {
-      flashMessages: {
-        error: 'Access Denied!',
-      },
-    })
-  }
-}
+		const verified = jwt.verify(token, "secret-hack-election");
+		console.log({token, verified});
+		req.id = verified;
+		next();
+	} catch (err) {
+		res.render("vote_election", {
+			error: "Access Denied!",
+			success: null,
+			formData: req.body,
+		});
+	}
+};

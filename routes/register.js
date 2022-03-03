@@ -1,67 +1,36 @@
-const route = require('express').Router()
-const db = require('../database/confix')
-const nodemailer = require('nodemailer')
-const smtpTransport = require('nodemailer-smtp-transport')
+const express = require("express");
+const route = express.Router();
+const {AddUsers} = require("./user_control");
+const Emailer = require("../mailer");
 
-var transporter = nodemailer.createTransport(
-  smtpTransport({
-    service: 'gmail',
-    host: 'smtp.gmail.com',
-    auth: {
-      user: 'wedecideinfo@gmail.com',
-      pass: 'Anu08101897603',
-    },
-  }),
-)
+route.get("/", (req, res, next) => {
+	res.render("admin_reg", {formData: null, error: null, success: null});
+});
 
-route.get('/', (req, res, next) => {
-  res.render('admin_reg', {
-    flashMessages: {},
-  })
-})
+route.post("/", async (req, res) => {
+	const formData = req.body;
 
-route.post('/', (req, res) => {
-  const { name, username, email, password, conPass } = req.body
+	const {type, message} = await AddUsers(formData);
 
-  if (
-    (typeof name === 'undefined') |
-    (typeof username === 'undefined') |
-    (typeof email === 'undefined') |
-    (typeof password === 'undefined') |
-    (typeof conPass === 'undefined')
-  ) {
-    res.redirect('/register')
-  } else {
-    // Check If email exist already
-    const userValidStm = 'SELECT `username` FROM `admin` WHERE `username` = ?'
-    db.query(userValidStm, [username], (err, result) => {
-      if (result.length !== 0) {
-        res.redirect('/register')
-      } else if (password !== conPass) {
-        res.redirect('/register')
-      } else {
-        insertStatement =
-          'Insert Into `admin` (`name`, `username`, `email`, `password`) VALUES (?,?,?,?)'
-        db.query(insertStatement, [name, username, email, password])
+	switch (type) {
+		case "error":
+			res.status(301).render("admin_reg", {
+				formData,
+				error: message,
+				success: null,
+			});
+			break;
+		case "success":
+			const text = `Good Day ${formData.name}! \nYou can now login and create your elections, Here are your login details \nUsername: ${formData.username} \nPassword: ${formData.password}`;
+			Emailer(formData.email, text);
 
-        var mailOptions = {
-          from: 'wedecideinfo@gmail.com',
-          to: email,
-          subject: 'WeDecide Login Details',
-          text: `Good Day ${name}! \nYou can now login and create your elections, Here are your login details \nUsername: ${username} \nPassword: ${password}`,
-        }
+			req.flash("success", message);
+			res.status(301).redirect("/login");
+			break;
 
-        transporter.sendMail(mailOptions, function (error, info) {
-          if (error) {
-            console.log(error)
-          } else {
-            console.log('Email sent: ' + info.response)
-            res.redirect('/login')
-          }
-        })
-      }
-    })
-  }
-})
+		default:
+			break;
+	}
+});
 
-module.exports = route
+module.exports = route;

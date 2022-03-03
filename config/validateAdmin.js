@@ -1,24 +1,19 @@
-const jwt = require('jsonwebtoken')
+const jwt = require("jsonwebtoken");
 
 // middleware for verifying jwt
-module.exports = function auth(req, res, next) {
-  const token = req.cookies.auth
-  if (!token)
-    return res.render('admin_login', {
-      flashMessages: {
-        error: 'Access Denied!',
-      },
-    })
+function auth(req, res, next) {
+	try {
+		const user = req.user;
 
-  try {
-    const verified = jwt.verify(token, 'secret-hack-admin')
-    req.id = verified
-    next()
-  } catch (err) {
-    res.render('admin_login', {
-      flashMessages: {
-        error: 'Access Denied!',
-      },
-    })
-  }
+		if (!user) throw Error;
+
+		return next();
+	} catch (err) {
+		console.error({...err});
+
+		req.flash("error", "Access Denied!");
+		return res.status(404).redirect("/login");
+	}
 }
+
+module.exports = auth;
