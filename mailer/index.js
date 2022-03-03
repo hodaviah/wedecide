@@ -1,6 +1,5 @@
 const nodemailer = require("nodemailer");
 const smtpTransport = require("nodemailer-smtp-transport");
-const {promisify} = require("util");
 
 // Setting Up For Mailling
 var transporter = nodemailer.createTransport({
@@ -13,8 +12,6 @@ var transporter = nodemailer.createTransport({
 		pass: "Anu08101897603",
 	},
 });
-
-transporter.sendMail = promisify(transporter.sendMail);
 
 /**
  *

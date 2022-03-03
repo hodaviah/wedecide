@@ -136,46 +136,49 @@
             <div class="col-lg-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">Basic Table</h4>
-                  <p class="card-description"></p>
-                  <div class="table-responsive">
-                    <table class="table">
-                      <thead>
-                        <tr>
-                          <th>Election</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <% for( let index=0; index < result.length; index++ ) { %>
+                  <%-include("message")-%>
+                    <h4 class="card-title">Basic Table</h4>
+                    <p class="card-description"></p>
+                    <div class="table-responsive">
+                      <table class="table">
+                        <thead>
                           <tr>
-                            <td>
-                              <%= result[index].name %>
-                            </td>
-
-                            <td> <a href="/admin/contest/<%- result[index].id %>"><button type="button"
-                                  class="btn btn-gradient-warning btn-rounded btn-fw">
-                                  Edit
-                                </button></a></td>
-
-                            <td> <a href="/admin/contest/delete-contest/<%- result[index].id %>"><button type="button"
-                                  class="btn btn-gradient-danger btn-rounded btn-fw">
-                                  Delete
-                                </button></a></td>
-
-                            <td>
-                              <% if (result[index].paid==0) { %>
-                                <a class="text-danger" href="/admin/contest/pay/<%- result[index].id %>"> Pay Now </a>
-                                <% } else if (result[index].paid==1) { %>
-                                  <label> Paid </label>
-                                  <% } %>
-                            </td>
-
+                            <th>Election</th>
+                            <th>Edit Election</th>
+                            <th>Delete Election</th>
                           </tr>
+                        </thead>
+                        <tbody>
+                          <% for( let index=0; index < result.length; index++ ) { %>
+                            <tr>
+                              <td>
+                                <%= result[index].name %>
+                              </td>
 
-                          <% } %>
-                      </tbody>
-                    </table>
-                  </div>
+                              <td> <a href="/admin/contest/<%- result[index].id %>"><button type="button"
+                                    class="btn btn-gradient-warning btn-rounded btn-fw">
+                                    Edit
+                                  </button></a></td>
+
+                              <td> <a href="/admin/contest/delete-contest/<%- result[index].id %>"><button type="button"
+                                    class="btn btn-gradient-danger btn-rounded btn-fw">
+                                    Delete
+                                  </button></a></td>
+
+                              <td>
+                                <% if (result[index].paid==0) { %>
+                                  <a class="text-danger" href="/admin/contest/pay/<%- result[index].id %>"> Pay Now </a>
+                                  <% } else if (result[index].paid==1) { %>
+                                    <label> Paid </label>
+                                    <% } %>
+                              </td>
+
+                            </tr>
+
+                            <% } %>
+                        </tbody>
+                      </table>
+                    </div>
                 </div>
               </div>
             </div>

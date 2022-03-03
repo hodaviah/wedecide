@@ -97,8 +97,14 @@ const candidateSchema = Schema(
 
 const voterSchema = Schema(
 	{
-		username: String,
-		email: String,
+		username: {
+			type: String,
+			unique: true,
+		},
+		email: {
+			type: String,
+			unique: true,
+		},
 		password: String,
 		phone: String,
 		voucher: String,

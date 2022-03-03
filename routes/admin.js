@@ -79,7 +79,12 @@ router.get("/logout", (req, res) => {
 
 //****************** The Route To Create An Election ********************/
 router.get("/create-election", EnsureIsAutheticated, (req, res) => {
-	res.render("create_election", {error: null, success: null, formData: null});
+	const success = req.flash("success")[0],
+		error = req.flash("error")[0],
+		formData = req.flash("formData")[0];
+	return res
+		.status(200)
+		.render("create_election", {error, success, formData});
 });
 
 // ******************* Create Election ***********************//
@@ -95,12 +100,10 @@ router.post("/create-election", EnsureIsAutheticated, async (req, res) => {
 	if (!name || !esd || !eed || !rsd || !red || !desp) {
 		// if any of the field is missing this same page will be render
 		// with error
+		req.flash("error", "All fields are require");
+		req.formData("formData", formData);
 
-		res.render("/admin/create-election", {
-			error: "All fields are required",
-			formData,
-			success: null,
-		});
+		return res.redirect("/admin/create-election");
 	} else {
 		try {
 			const newElection = new Models.ElectionModel({
@@ -141,7 +144,9 @@ router.post("/create-election", EnsureIsAutheticated, async (req, res) => {
 router.get("/manage-election", EnsureIsAutheticated, async (req, res) => {
 	const token = req.user;
 	const user_id = jwt.decode(token, "secret-hack-admin")._id;
-	const success = req.flash("success");
+	const success = req.flash("success")[0];
+
+	console.log({session: req.session, session_id: req.sessionID, success});
 	// state1 = "SELECT * FROM `election` WHERE admin_id = ?";
 
 	try {
@@ -159,7 +164,7 @@ router.get("/manage-election", EnsureIsAutheticated, async (req, res) => {
 		res.render("manage_election", {
 			result: elections,
 			success,
-			error: null,
+			error: false,
 		});
 	} catch (err) {
 		console.log({err});
@@ -219,9 +224,13 @@ router.post("/create-contest", EnsureIsAutheticated, async (req, res) => {
 
 //*******Page to manage contest Edit, Delete Payment and Result */
 router.get("/manage-contest", EnsureIsAutheticated, async (req, res) => {
-	token = req.user;
-	user_id = jwt.decode(token, "secret-hack-admin")._id;
-	state1 = "SELECT * FROM `contest` WHERE admin_id = ?";
+	const token = req.user;
+	const user_id = jwt.decode(token, "secret-hack-admin")._id;
+	const state1 = "SELECT * FROM `contest` WHERE admin_id = ?";
+	const error = req.flash("error")[0];
+	const success = req.flash("success")[0];
+
+	console.log({error, success});
 
 	try {
 		const contests = await Models.ContestModel.find({
@@ -229,7 +238,7 @@ router.get("/manage-contest", EnsureIsAutheticated, async (req, res) => {
 		}).lean();
 
 		console.log({contests});
-		res.render("manage_contest", {result: contests});
+		res.render("manage_contest", {result: contests, error, success});
 	} catch (err) {
 		console.log({...err});
 	}

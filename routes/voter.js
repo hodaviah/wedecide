@@ -22,12 +22,17 @@ const {promisify} = require("util");
 //****************To Register to vote for an election */
 router.get("/register-election", async (req, res) => {
 	const elections = await Models.ElectionModel.find({}).lean();
+	const success = req.flash("success")[0];
+	const error = req.flash("error")[0];
+	const formData = req.flash("formData")[0];
+
+	console.log({elections, success, error, formData});
 
 	res.render("vote_register", {
 		result: elections,
-		success: null,
-		error: null,
-		formData: null,
+		success,
+		error,
+		formData,
 	});
 });
 
@@ -36,7 +41,6 @@ router.post("/register-election", async (req, res) => {
 	form.parse(req, async (err, fields, files) => {
 		try {
 			console.log({err, fields, files});
-
 			if (err) throw Error(err);
 
 			const {election, username, email, phone, password, image_name} =
@@ -50,13 +54,9 @@ router.post("/register-election", async (req, res) => {
 				!image_name ||
 				!files["image"]
 			) {
-				const elections = await Models.ElectionModel.find({}).lean();
-				return res.render("vote_register", {
-					result: elections,
-					success: null,
-					error: "All Fields Required",
-					formData: fields,
-				});
+				req.flash("error", "All Fields Required"),
+					req.flash("formData", {...fields, file: files["image"]});
+				return res.redirect("/voter/register-election");
 			}
 
 			const electionDetail = election.split("/");
@@ -65,19 +65,6 @@ router.post("/register-election", async (req, res) => {
 					fs.mkdirSync("./public/uploads");
 				}
 			});
-
-			const userValidStm = await Models.VoterModel.find({
-				username: username,
-				election_id: mongoose.Types.ObjectId(electionDetail[0]),
-			});
-
-			if (userValidStm?.length) {
-				return res.render("vote_register", {
-					error: "You have been registered already",
-					formData: req.body,
-					success: null,
-				});
-			}
 
 			const voucher = `ev-${uuidv4()}`;
 			const timestamp = new Date().toISOString().replaceAll(/\W/g, "_");
@@ -98,22 +85,45 @@ router.post("/register-election", async (req, res) => {
 				election_id: electionDetail[0],
 				face_path: "/" + ref,
 			});
+
+			// const newCandidate = new Models.CandidateModel({
+			// 	election_id: electionDetail[0],
+			// 	poll_id:
+			// })
 			await newVoter.save();
 
 			const text = `Good Day ${username}!. \nYou can now partcipate in the election: ${electionDetail[1]} by voting for your favorite candidate, Here is your details \nUsername: ${username} \nPassword: ${password} \nvouchar: ${voucher}`;
 
-			Emailer(email, text);
+			const {error, response} = await Emailer(email, text);
+			console.log({error, response});
 
-			res.redirect("/voter/vote-election");
+			if (error)
+				throw Error(
+					"Error sending Email, We will verify your email later"
+				);
+
+			req.flash(
+				"success",
+				"You can login as a voter of" + electionDetail[1]
+			);
+			return res.redirect("/voter/vote-election");
 		} catch (error) {
 			console.log({error});
-			const elections = await Models.ElectionModel.find({}).lean();
-			return res.render("vote_register", {
-				result: elections,
-				success: null,
-				error: "Internal Server Error",
-				formData: fields,
-			});
+
+			if (error.keyValue) {
+				req.flash(
+					"error",
+					Object.keys(error?.keyValue)[0] +
+						" - " +
+						Object.values(error.keyValue)[0] +
+						" already exist"
+				);
+			} else {
+				req.flash("error", error?.message ?? "Internal Server Error");
+			}
+			req.flash("formData", {...fields, file: files["image"]});
+
+			return res.redirect("/voter/register-election");
 		}
 	});
 });
@@ -121,11 +131,15 @@ router.post("/register-election", async (req, res) => {
 //************To Login befor you vote for an election */
 router.get("/vote-election", async (req, res) => {
 	const elections = await Models.ElectionModel.find({}, {name: 1}).lean();
+	const success = req.flash("success")[0];
+	const error = req.flash("error")[0];
+	const formData = req.flash("formData")[0];
+
 	res.render("vote_election", {
 		result: elections,
-		error: null,
-		success: null,
-		formData: null,
+		error,
+		success,
+		formData,
 	});
 });
 
@@ -134,16 +148,9 @@ router.post("/vote-election", async (req, res) => {
 	const username = req.body.username;
 	const password = req.body.password;
 
-	console.log({election, username, password});
-
 	if (!election || !username || !password) {
-		const elections = await Models.ElectionModel.find({}, {name: 1}).lean();
-		res.render("vote_election", {
-			result: elections,
-			error: "All fields require",
-			success: null,
-			formData: null,
-		});
+		req.flash("error", "All fields require");
+		return res.status(301).redirect("/voter/vote-election");
 	}
 
 	const details = election.split("/");
@@ -152,27 +159,18 @@ router.post("/vote-election", async (req, res) => {
 		election_id: mongoose.Types.ObjectId(details[0]),
 	}).lean();
 
-	console.log({VotingElection});
 	const compare = await bcrypt.compare(
 		password,
 		VotingElection[0]?.password ?? ""
 	);
 
-	console.log({compare});
 	if (!VotingElection?.length || !compare) {
-		const availableElections = await Models.ElectionModel.find(
-			{},
-			{name: 1}
-		).lean();
-
-		const pageData = {
-			result: availableElections,
-			error: "Invalid Creditials or you have not registered for the election",
-			success: null,
-			formData: req.body,
-		};
-
-		return res.render("vote_election", pageData);
+		req.flash(
+			"error",
+			"Invalid Creditials or you have not registered for the election"
+		);
+		req.flash("formData", req.body);
+		return res.status(301).redirect("/voter/vote-election");
 	}
 
 	const token = jwt.sign(
