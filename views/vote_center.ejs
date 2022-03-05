@@ -46,34 +46,37 @@
             <div class="col-12 grid-margin stretch-card">
               <div class="card">
                 <div class="card-body">
-                  <h4 class="card-title">
-                    <%= result.name %>
-                  </h4>
-                  <p class="card-description"></p>
-                  <form action="/voter/election-center" method="POST" class="forms-sample">
-                    <% for( let index=0; index < result.polls.length; index++ ) { %>
-                      <div class="form-group">
-                        <label for="exampleInputName1">
-                          <%= result[1][index].name %>
-                        </label>
-                        <% for( let index0=0; index0 < result.candidates.length; index0++ ) { %>
-                          <% if (result.polls[index]._id===result.candidates[index0].poll_id) { %>
-                            <div class="form-check">
-                              <label class="form-check-label">
-                                <input type="radio" class="form-check-input" name="<%= result.polls[index].name %>"
-                                  value="<%= result.candidates[index0]._id %>">
+                  <%- include("message") -%>
+                    <h4 class="card-title">
+                      <%= result.name %>
+                    </h4>
+                    <p class="card-description"></p>
+                    <form action="/voter/election-center" method="POST" class="forms-sample">
+                      <% for( let index=0; index < result.polls.length; index++ ) { %>
+                        <div class="form-group">
+                          <label for="exampleInputName1">
+                            <%= result.polls[index].name %>
+                          </label>
+                          <% for( let index0=0; index0 < result.candidates.length; index0++ ) { %>
+                            <% if (String(result.polls[index]._id)===String(result.candidates[index0].poll_id)) { %>
+                              <div class="form-check">
+                                <label class="form-check-label">
+                                  <input type="radio" class="form-check-input"
+                                    name="<%= result.polls[index]._id %>/<%= result.polls[index].name %>"
+                                    value="<%= result.candidates[index0]._id %>">
+                                  <%= result.candidates[index0].name %>
 
-                                <%= result.candidates[index0].name %>
-
-                              </label>
-                            </div>
-                            <% } %>
+                                </label>
+                              </div>
                               <% } %>
-                      </div>
-                      <% } %>
-
-                        <button type="submit" class="btn btn-primary mr-2">Submit</button>
-                  </form>
+                                <% } %>
+                        </div>
+                        <% } %>
+                          <div class="form-group">
+                            <input type="hidden" name="browser_fingerprint" value="">
+                          </div>
+                          <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                    </form>
                 </div>
               </div>
             </div>
@@ -98,6 +101,21 @@
   </div>
   <!-- container-scroller -->
   <!-- plugins:js -->
+  <script>
+    // Initialize the agent at application startup.
+    const fpPromise = import('/js/fingerprint.js')
+      .then(FingerprintJS => FingerprintJS.load())
+
+    // Get the visitor identifier when you need it.
+    fpPromise
+      .then(fp => fp.get())
+      .then(result => {
+        // This is the visitor identifier:
+        const visitorId = result.visitorId
+        document.getElementById("fingerprint").value = visitorId
+        console.log({ visitorId })
+      })
+  </script>
   <script src="voters/vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
   <!-- Plugin js for this page -->

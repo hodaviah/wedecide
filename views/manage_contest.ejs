@@ -155,13 +155,13 @@
                                 <%= result[index].name %>
                               </td>
 
-                              <td> <a href="/admin/contest/<%- result[index].id %>"><button type="button"
+                              <td> <a href="/admin/contest/<%- result[index]._id %>"><button type="button"
                                     class="btn btn-gradient-warning btn-rounded btn-fw">
                                     Edit
                                   </button></a></td>
 
-                              <td> <a href="/admin/contest/delete-contest/<%- result[index].id %>"><button type="button"
-                                    class="btn btn-gradient-danger btn-rounded btn-fw">
+                              <td> <a href="/admin/contest/delete-contest/<%- result[index]._id %>"><button
+                                    type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
                                     Delete
                                   </button></a></td>
 

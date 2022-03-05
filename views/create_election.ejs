@@ -168,8 +168,7 @@
                       </div>
                       <div class="form-group">
                         <label for="exampleTextarea1">Description</label>
-                        <textarea required name="desp" value="<%= formData?.desp ?? "" %>" class="form-control"
-                          id="exampleTextarea1" rows="4"></textarea>
+                        <textarea required name="desp" class="form-control" id="exampleTextarea1" rows="4"></textarea>
                       </div>
                       <button type="submit" class="btn btn-gradient-primary mr-2">Submit</button>
                   </form>
@@ -199,8 +198,8 @@
     </div>
     <!-- page-body-wrapper ends -->
   </div>
-  <script>
-    console.log("<%= formData %>", "<%= formData?.name %>")
+  <script async>
+    document.querySelector("#exampleTextarea1").textContent = "<%= formData?.desp %>"
   </script>
   <!-- container-scroller -->
   <!-- plugins:js -->

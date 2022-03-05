@@ -25,7 +25,7 @@ const adminSchema = Schema(
 			],
 			default: [],
 		},
-		contest: {
+		contests: {
 			type: [
 				{
 					type: Schema.Types.ObjectId,
@@ -41,7 +41,7 @@ const adminSchema = Schema(
 // Election Schema
 const electionSchema = Schema(
 	{
-		admin_id: {type: Schema.Types.ObjectId, ref: "WedecideAdmin"},
+		admin_id: {type: Schema.Types.ObjectId},
 		name: {
 			type: String,
 			unique: true,
@@ -65,6 +65,18 @@ const electionSchema = Schema(
 			type: [{type: Schema.Types.ObjectId, ref: "WedecideCandidates"}],
 			default: [],
 		},
+		voters: {
+			type: [{type: Schema.Types.ObjectId, ref: "WedecideVoters"}],
+			default: [],
+		},
+		mobile_voted: {
+			type: [String],
+			default: [],
+		},
+		browser_fingerprint: {
+			type: [String],
+			default: [],
+		},
 	},
 	{
 		strict: true,
@@ -74,20 +86,27 @@ const electionSchema = Schema(
 );
 
 // Wedecide Poll Schema
-const pollSchema = Schema({
-	_id: Schema.Types.ObjectId,
-	election_id: Schema.Types.ObjectId,
-	name: String,
-});
+const pollSchema = Schema(
+	{
+		election_id: Schema.Types.ObjectId,
+		name: String,
+	},
+	{
+		collection: "WedecidePolls",
+		strict: true,
+	}
+);
 
 // Candidate
 const candidateSchema = Schema(
 	{
-		_id: Schema.Types.ObjectId,
 		election_id: {type: Schema.Types.ObjectId, ref: "WedecideElections"},
 		poll_id: {type: Schema.Types.ObjectId, ref: "WedecidePolls"},
 		name: String,
-		vote: Number,
+		vote: {
+			type: Number,
+			default: 0,
+		},
 	},
 	{
 		collection: "WedecideCandidates",
@@ -106,7 +125,10 @@ const voterSchema = Schema(
 			unique: true,
 		},
 		password: String,
-		phone: String,
+		phone: {
+			unique: true,
+			type: Number,
+		},
 		voucher: String,
 		election_id: Schema.Types.ObjectId,
 		face_path: String,
@@ -132,6 +154,27 @@ const contestSchema = Schema(
 		},
 		end_date: Date,
 		description: String,
+		polls: {
+			type: [
+				{type: Schema.Types.ObjectId, ref: "WedecideContestantPolls"},
+			],
+			default: [],
+		},
+		contestants: {
+			type: [{type: Schema.Types.ObjectId, ref: "WedecideContestants"}],
+		},
+		voters: {
+			type: [{type: Schema.Types.ObjectId, ref: "WedecideContestVoters"}],
+			default: [],
+		},
+		mobile_voted: {
+			type: [String],
+			default: [],
+		},
+		browser_fingerprint: {
+			type: [String],
+			default: [],
+		},
 	},
 	{
 		collection: "WedecideContests",
@@ -143,9 +186,13 @@ const contestantPollSchema = Schema(
 	{
 		contest_id: {
 			type: Schema.Types.ObjectId,
-			ref: "WedecideContests",
 		},
+		poll_id: Schema.Types.ObjectId,
 		name: String,
+		votes: {
+			type: String,
+			default: 0,
+		},
 	},
 	{
 		collection: "WedecideContestantPolls",
@@ -157,11 +204,9 @@ const contestantSchema = Schema(
 	{
 		contest_id: {
 			type: Schema.Types.ObjectId,
-			ref: "WedecideContests",
 		},
 		poll_id: {
 			type: Schema.Types.ObjectId,
-			ref: "WedecidePolls",
 		},
 		name: String,
 		vote: {
@@ -178,16 +223,28 @@ const contestantSchema = Schema(
 const contestVoterSchema = Schema(
 	{
 		name: String,
-		email: String,
-		voucher: String,
-		phone: Number,
+		email: {
+			type: String,
+			unique: true,
+		},
+		voucher: {
+			type: String,
+			unique: true,
+		},
+		phone: {
+			type: Number,
+			unique: true,
+		},
 		contest_id: {
 			type: Schema.Types.ObjectId,
-			ref: "WedecideContests",
 		},
 		vote: {
 			type: Number,
 			default: 0,
+		},
+		not_counted: {
+			type: Boolean,
+			default: false,
 		},
 	},
 	{
@@ -229,7 +286,7 @@ const ContestantModel =
 
 const ContestVoterModel =
 	mongoose.model.WedecideContestVoters ||
-	mongoose.model("WedecideContestVoter", contestVoterSchema);
+	mongoose.model("WedecideContestVoters", contestVoterSchema);
 
 module.exports = {
 	AdminModel,

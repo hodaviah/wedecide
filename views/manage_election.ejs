@@ -155,17 +155,17 @@
                               <td>
                                 <%= result[index].name %>
                               </td>
-                              <td> <a href="/admin/election/<%- result[index].id %>"><button type="button"
+                              <td> <a href="/admin/election/<%- result[index]._id %>"><button type="button"
                                     class="btn btn-gradient-warning btn-rounded btn-fw">
                                     Edit
                                   </button></a></td>
-                              <td> <a href="/admin/election/delete-election/<%- result[index].id %>"><button
+                              <td> <a href="/admin/election/delete-election/<%- result[index]._id %>"><button
                                     type="button" class="btn btn-gradient-danger btn-rounded btn-fw">
                                     Delete
                                   </button></a></td>
                               <td>
                                 <% if (result[index].paid==0) { %>
-                                  <a class="text-danger" href="/admin/election/pay/<%- result[index].id %>"> Pay Now
+                                  <a class="text-danger" href="/admin/election/pay/<%- result[index]._id %>"> Pay Now
                                   </a>
                                   <% } else if (result[index].paid==1) { %>
                                     <label> Paid </label>
@@ -203,20 +203,21 @@
     </div>
     <!-- container-scroller -->
     <!-- plugins:js -->
-    <script src="../vendors/js/vendor.bundle.base.js"></script>
-    <!-- endinject -->
-    <!-- Plugin js for this page -->
-    <script src="../vendors/chart.js/Chart.min.js"></script>
-    <!-- End plugin js for this page -->
-    <!-- inject:js -->
-    <script src="../js/off-canvas.js"></script>
-    <script src="../js/hoverable-collapse.js"></script>
-    <script src="../js/misc.js"></script>
-    <!-- endinject -->
-    <!-- Custom js for this page -->
-    <script src="../js/dashboard.js"></script>
-    <script src="../js/todolist.js"></script>
-    <!-- End custom js for this page -->
+  </div>
+  <script src="../vendors/js/vendor.bundle.base.js"></script>
+  <!-- endinject -->
+  <!-- Plugin js for this page -->
+  <script src="../vendors/chart.js/Chart.min.js"></script>
+  <!-- End plugin js for this page -->
+  <!-- inject:js -->
+  <script src="../js/off-canvas.js"></script>
+  <script src="../js/hoverable-collapse.js"></script>
+  <script src="../js/misc.js"></script>
+  <!-- endinject -->
+  <!-- Custom js for this page -->
+  <script src="../js/dashboard.js"></script>
+  <script src="../js/todolist.js"></script>
+  <!-- End custom js for this page -->
 </body>
 
 </html>

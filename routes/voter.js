@@ -18,6 +18,7 @@ router.use(express.static("public"));
 const db = require("../database/config");
 const {render} = require("ejs");
 const {promisify} = require("util");
+const {errorMonitor} = require("events");
 
 //****************To Register to vote for an election */
 router.get("/register-election", async (req, res) => {
@@ -86,25 +87,16 @@ router.post("/register-election", async (req, res) => {
 				face_path: "/" + ref,
 			});
 
-			// const newCandidate = new Models.CandidateModel({
-			// 	election_id: electionDetail[0],
-			// 	poll_id:
-			// })
 			await newVoter.save();
 
 			const text = `Good Day ${username}!. \nYou can now partcipate in the election: ${electionDetail[1]} by voting for your favorite candidate, Here is your details \nUsername: ${username} \nPassword: ${password} \nvouchar: ${voucher}`;
 
-			const {error, response} = await Emailer(email, text);
-			console.log({error, response});
-
-			if (error)
-				throw Error(
-					"Error sending Email, We will verify your email later"
-				);
+			// Emailer, will email user creditial to there email
+			Emailer(email, text);
 
 			req.flash(
 				"success",
-				"You can login as a voter of" + electionDetail[1]
+				"You can login as a voter of " + electionDetail[1]
 			);
 			return res.redirect("/voter/vote-election");
 		} catch (error) {
@@ -144,50 +136,56 @@ router.get("/vote-election", async (req, res) => {
 });
 
 router.post("/vote-election", async (req, res) => {
-	const election = req.body.election;
-	const username = req.body.username;
-	const password = req.body.password;
+	try {
+		const election = req.body.election;
+		const username = req.body.username;
+		const password = req.body.password;
 
-	if (!election || !username || !password) {
-		req.flash("error", "All fields require");
-		return res.status(301).redirect("/voter/vote-election");
-	}
+		if (!election || !username || !password) {
+			req.flash("error", "All fields require");
+			return res.status(301).redirect("/voter/vote-election");
+		}
 
-	const details = election.split("/");
-	const VotingElection = await Models.VoterModel.find({
-		username: username,
-		election_id: mongoose.Types.ObjectId(details[0]),
-	}).lean();
+		const details = election.split("/");
+		const VotingElection = await Models.VoterModel.findOne({
+			username: username,
+			election_id: mongoose.Types.ObjectId(details[0]),
+		});
 
-	const compare = await bcrypt.compare(
-		password,
-		VotingElection[0]?.password ?? ""
-	);
-
-	if (!VotingElection?.length || !compare) {
-		req.flash(
-			"error",
-			"Invalid Creditials or you have not registered for the election"
+		const compare = await bcrypt.compare(
+			password,
+			VotingElection?.password ?? ""
 		);
+
+		if (!VotingElection || !compare)
+			throw Error(
+				"Invalid Creditials or you have not registered for the election"
+			);
+
+		if (VotingElection.vote)
+			throw Error("You have voted for this election already");
+
+		const token = jwt.sign(
+			{
+				id: VotingElection._id,
+				username: VotingElection.username,
+				election_id: VotingElection.election_id,
+			},
+			"secret-hack-election"
+		);
+		return res.cookie("election_auth", token).redirect("/voter/face-check");
+	} catch (error) {
+		req.flash("error", error?.message);
 		req.flash("formData", req.body);
 		return res.status(301).redirect("/voter/vote-election");
 	}
-
-	const token = jwt.sign(
-		{
-			id: VotingElection[0]._id,
-			username: VotingElection[0].username,
-			election_id: VotingElection[0].election_id,
-		},
-		"secret-hack-election"
-	);
-	res.cookie("election_auth", token).redirect("/voter/face-check");
 });
 
 router.get("/face-check", verifyElection, async (req, res) => {
 	const token = req.cookies.election_auth;
 	const votingElection = {...jwt.decode(token, "secret-hack-election")};
 
+	console.log({token, votingElection});
 	// const voters_username = jwt.decode(token).username;
 	// const election_id = jwt.decode(token).election_id;
 
@@ -195,7 +193,19 @@ router.get("/face-check", verifyElection, async (req, res) => {
 		votingElection.id
 	).lean();
 
-	console.log({ElectionVotes});
+	if (!ElectionVotes) {
+		res.clearCookie("election_auth", {path: "/"});
+		const elections = await Models.ElectionModel.find({}).lean();
+
+		req.flash("error", "Access Denied!");
+		return res.status(301).render("vote_election", {
+			error: "Session Timeout, Log in",
+			success: null,
+			formData: null,
+			result: elections,
+		});
+	}
+
 	return res.status(200).render("face_check", {result: ElectionVotes});
 
 	// state0 = "SELECT * FROM `voter` WHERE id = ?;";
@@ -206,10 +216,16 @@ router.get("/face-check", verifyElection, async (req, res) => {
 
 //****************To Register to vote for an contest */
 router.get("/register-contest", async (req, res) => {
-	// state1 =
-	// 	"SELECT * FROM `contest`WHERE (CURRENT_TIMESTAMP BETWEEN `contest`.`start_date` AND `contest`.`end_date`) AND `contest`.`paid`=1";
+	const success = req.flash("success")[0];
+	const error = req.flash("error")[0];
+	const formData = req.flash("formData")[0];
 	const contests = await Models.ContestModel.find({}).lean();
-	res.status(200).render("contest_register", {result: contests});
+	res.status(200).render("contest_register", {
+		result: contests,
+		formData,
+		error,
+		success,
+	});
 });
 
 //************To Get info about the voter (Contest) and send an email with his/her vouchar details */
@@ -217,69 +233,105 @@ router.post("/contest-register", async (req, res) => {
 	const {contest, name, email, phone, cardName, cardNo, mmyy, cvv} = req.body;
 
 	const detailArr = contest.split("/");
-	const expArr = mmyy.split("/");
-	const expiry_month = expArr[0].trim().toString();
-	const expiry_year = expArr[1].trim().toString();
 	const contest_id = detailArr[0].trim();
 	const contest_name = detailArr[1].trim();
 	const voucher = `cv-${uuidv4()}`;
 
-	const newContestVoter = new Models.ContestVoterModel({
-		name,
-		email,
-		phone,
-		voucher,
-		contest_id,
-	});
+	if (!contest || !name || !email || !phone)
+		throw Error("All fields require");
 
-	await newContestVoter.save();
+	try {
+		const newContestVoter = new Models.ContestVoterModel({
+			name,
+			email,
+			phone,
+			voucher,
+			contest_id,
+		});
 
-	const text = `Good Day ${name}! \nYou can now partcipate in the contest: ${contest_name} by voting for your favorite contestant , Here is your vouchar \n${voucher}`;
-	const {error, response} = await Emailer(email, text);
+		await newContestVoter.save();
 
-	if (error) return console.log(error);
+		const text = `Good Day ${name}! \nYou can now partcipate in the contest: ${contest_name} by voting for your favorite contestant , Here is your vouchar \n${voucher}`;
+		const {error, response} = await Emailer(email, text);
 
-	console.log("Email sent: " + response);
-	res.redirect("/voter/contest-vote");
+		if (error) return console.log(error);
+
+		console.log("Email sent: " + response);
+		req.flash("success", "Your voucher has been sent to your email.");
+		res.redirect("/voter/contest-vote");
+	} catch (error) {
+		if (error?.keyValue) {
+			req.flash(
+				"error",
+				Object.keys(error.keyValue)[0] +
+					" - " +
+					Object.values(error.keyValue)[0] +
+					" already exist"
+			);
+		} else req.flash("error", error?.message);
+
+		req.flash("formData", req.body);
+		return res.redirect("/voter/register-contest");
+	}
 });
 
 //***********************Route to in put the vouchar */
-router.get("/contest-vote", (req, res) => {
-	res.render("contest_vote");
+router.get("/contest-vote", async (req, res) => {
+	const success = req.flash("success")[0];
+	const error = req.flash("error")[0];
+	const formData = req.flash("formData")[0];
+
+	return res.status(200).render("contest_vote", {error, success, formData});
 });
 
 //*******************Verify the Vouchar */
-router.post("/contest-vote", (req, res) => {
-	const vouchar = req.body.vouchar;
+router.post("/contest-vote", async (req, res) => {
+	try {
+		const voucher = req.body.vouchar;
 
-	const userValidStm = "SELECT * FROM `contest_voter` WHERE `voucher` = ?";
-
-	db.query(userValidStm, [vouchar], function (err, result) {
-		if (err) throw err;
-
-		if (result.length === 0) {
-			res.render("used_vouchar");
-		} else if (result[0].vote === 1) {
-			res.render("used_vouchar");
-		} else {
-			const token = jwt.sign(
-				{
-					id: result[0].contest_id,
-					voter_id: result[0].id,
-					voter_name: result[0].name,
-					voter_email: result[0].email,
-				},
-				"secret-hack-contest"
+		if (!voucher)
+			return (
+				res.flash("error", "All fields require"),
+				res.status(400).redirect("/voter/contest-vote")
 			);
-			res.cookie("contest_auth", token).redirect("/voter/contest-center");
-		}
-	});
+
+		const contestVoter = await Models.ContestVoterModel.findOne({
+			voucher,
+		});
+
+		console.log({contestVoter});
+
+		if (!contestVoter)
+			throw Error(
+				"It seems like the contest you are looking for is not available anymore"
+			);
+		if (contestVoter.vote)
+			throw Error("Your voucher has been used to cast a vote");
+
+		const token = jwt.sign(
+			{
+				id: contestVoter.contest_id,
+				voter_id: contestVoter._id,
+				voter_name: contestVoter.name,
+				voter_email: contestVoter.email,
+			},
+			"secret-hack-contest"
+		);
+
+		return res
+			.cookie("contest_auth", token)
+			.redirect("/voter/contest-center");
+	} catch (error) {
+		req.flash("formData", req.body);
+		req.flash("error", error?.message ?? "Internal Server Error");
+		return res.status(301).redirect("/voter/contest-vote");
+	}
 });
 
 //**********************Route where they will cast vote (Election) */
 router.get("/election-center", verifyElection, async (req, res) => {
 	const token = req.cookies.election_auth;
-	const error = req.flash("error");
+	const error = req.flash("error")[0];
 	const election_id = jwt.decode(token, "secret-hack-election").election_id;
 
 	const electionDetail = await Models.ElectionModel.findById(
@@ -293,133 +345,198 @@ router.get("/election-center", verifyElection, async (req, res) => {
 		.populate("polls")
 		.populate("candidates");
 
-	console.log({electionDetail, election_id, token});
+	if (!electionDetail) {
+		res.clearCookie("election_auth", {path: "/"});
+		const elections = await Models.ElectionModel.find({}).lean();
+
+		req.flash("error", "Access Denied!");
+		return res.status(301).render("vote_election", {
+			error: "Session Timeout, Log in",
+			success: null,
+			formData: null,
+			result: elections,
+		});
+	}
 
 	return res.render("vote_center", {
 		result: electionDetail,
 		error,
 		success: null,
 	});
-
-	// state0 = "SELECT `id`, `name` FROM `election` WHERE `id` = ?;";
-	// state1 = "SELECT * FROM `poll` WHERE `election_id` = ?;";
-	// state2 = "SELECT * FROM `candidate` WHERE candidate.election_id = ?;";
-
-	// statement = state0 + state1 + state2;
-	// db.query(
-	// 	statement,
-	// 	[election_id, election_id, election_id],
-	// 	(err, result) => {
-	// 		res.render("vote_center", {result});
-	// 	}
-	// );
 });
 
-router.post("/election-center", verifyElection, (req, res) => {
-	const token = req.cookies.election_auth;
-	const election_id = jwt.decode(token, "secret-hack-election").id;
-	// const voters_username = jwt.decode(token).username;
-	// const election_id = jwt.decode(token).election_id;
-	var newdata = Object.values(req.body);
-	console.log({newdata});
+router.post("/election-center", verifyElection, async (req, res) => {
+	const token = jwt.decode(req.cookies.election_auth);
+	const voter_id = token.id;
+	const election_id = token.election_id;
+	var formData = req.body;
+	const browser_fingerprint = formData.browser_fingerprint;
 
-	if (newdata.length === 0) {
+	delete formData.browser_fingerprint;
+	var candidate_ids = Object.values(formData); // array of names of the poll
+	var poll_ids = Object.keys(formData)?.map((id) => id.split("/")[0]); // array of names of the poll
+
+	if (!candidate_ids?.length) {
 		req.flash("error", "Vote for at least one contestant");
-		res.status(301).redirect("/election-center");
-	} else {
-		for (let i = 0; i < newdata.length; i++) {
-			state = "Select `vote` From `candidate` Where `id` = ?;";
-			db.query(state, [newdata[i]], (err, result) => {
-				var res = parseInt(result[0].vote);
-				res = res + 1;
+		return res.status(301).redirect("/voter/election-center");
+	}
 
-				vote_state =
-					"Update `candidate` Set `vote` = ? Where `id` = ?;";
-				db.query(vote_state, [res, newdata[i]], (err, result) => {});
-			});
+	try {
+		// Update the total casted vote of the Voter
+		const voter = await Models.VoterModel.findByIdAndUpdate(voter_id, {
+			$inc: {vote: 1},
+		}).exec();
+
+		const election = await Models.ElectionModel.findById(election_id);
+
+		if (election.browser_fingerprint.includes(browser_fingerprint.trim())) {
+			Models.VoterModel.findByIdAndUpdate(voter_id, {
+				not_counted: true,
+			}).exec();
+			throw Error(
+				"This device has been used to vote already, a device can only be use once to vote in a contest"
+			);
 		}
-		upstate = "Update `voter` Set `vote` = 1 Where `id` = ?";
-		db.query(upstate, [voter_id], (err, result) => {
-			if (err) throw err;
 
-			// var mailOptions = {
-			//   from: 'wedecideinfo@gmail.com',
-			//   to: voter_email,
-			//   subject: 'WeDecide Login Details',
-			//   text: `Good Day ${voters_username}! \nThank You for partcipating in the contest by voting for your favorite candidate.`,
-			// }
+		election.browser_fingerprint.push(browser_fingerprint);
+		election.voters.push(voter_id);
+		await election.save();
 
-			// transporter.sendMail(mailOptions, function (error, info) {
-			//   if (error) {
-			//     console.log(error)
-			//   } else {
-			//     console.log('Email sent: ' + info.response)
-			//   }
-			// })
-		});
-		res.cookie("election_auth", null);
-		res.redirect("/voter/thank-you");
+		// Update poll votes
+		const polls = await Models.PollModel.updateMany(
+			{_id: {$in: poll_ids}},
+			{$inc: {vote: 1}}
+		).exec();
+
+		// Update candidate votes
+		const candidates = await Models.CandidateModel.updateMany(
+			{_id: {$in: candidate_ids}},
+			{$inc: {vote: 1}}
+		).exec();
+
+		res.clearCookie("election_auth", {path: "/"});
+		return res.redirect("/voter/thank-you");
+	} catch (error) {
+		req.flash("error", error?.message ?? "Internal Server Error");
+		return res.status(301).redirect("/voter/election-center");
 	}
 });
 
 //**************** Route where they will cast vote (Contest)*/
-router.get("/contest-center", verify, (req, res) => {
-	token = req.cookies.contest_auth;
-	const id = jwt.decode(token).id;
-	voter_id = jwt.decode(token).voter_id;
-	console.log(voter_id);
-	state0 = "SELECT `id`, `name` FROM `contest` WHERE `id` = ?;";
-	state1 = "SELECT * FROM `contestant_poll` WHERE `contest_id` = ?;";
-	state2 = "SELECT * FROM `contestant` WHERE contestant.contest_id = ?;";
+router.get("/contest-center", verify, async (req, res) => {
+	const token = req.cookies.contest_auth;
+	const error = req.flash("error")[0];
+	const contest_id = jwt.decode(token).id;
 
-	statement = state0 + state1 + state2;
-	db.query(statement, [id, id, id], (err, result) => {
-		res.render("contest_center", {result});
+	const contestDetail = await Models.ContestModel.findById(contest_id, {
+		name: 1,
+		polls: 1,
+		contestants: 1,
+	})
+		.populate("polls")
+		.populate("contestants");
+
+	if (!contestDetail) {
+		res.clearCookie("election_auth", {path: "/"});
+		const contests = await Models.ContestModel.find({}).lean();
+
+		req.flash("error", "Access Denied!");
+		return res.status(301).render("vote_election", {
+			error: "Session Timeout, Log in",
+			success: null,
+			formData: null,
+			result: contests,
+		});
+	}
+
+	return res.render("contest_center", {
+		result: contestDetail,
+		error,
+		success: null,
 	});
 });
 
 //******************People vote for contestant */
-router.post("/contest-center", verify, (req, res) => {
-	token = req.cookies.contest_auth;
-	voter_id = jwt.decode(token).voter_id;
-	voter_name = jwt.decode(token).voter_name;
-	voter_email = jwt.decode(token).voter_email;
-	var newdata = Object.values(req.body);
-	if (newdata.length === 0) {
-		res.send("Vote for at least one contestant");
-	} else {
-		for (let i = 0; i < newdata.length; i++) {
-			state = "Select `vote` From `contestant` Where `id` = ?;";
-			db.query(state, [newdata[i]], (err, result) => {
-				var res = parseInt(result[0].vote);
-				res = res + 1;
+router.post("/contest-center", verify, async (req, res) => {
+	const token = jwt.decode(req.cookies.contest_auth);
+	const voter_id = token.voter_id;
+	const voter_name = token.voter_name;
+	const voter_email = token.voter_email;
+	const contest_id = token.id;
+	// const MobileDetect = require("mobile-detect");
+	// const md = new MobileDetect(req.headers["user-agent"]);
 
-				vote_state =
-					"Update `contestant` Set `vote` = ? Where `id` = ?;";
-				db.query(vote_state, [res, newdata[i]], (err, result) => {});
-			});
+	console.log({voter_id, voter_name, voter_email, contest_id});
+	var formData = req.body;
+	var browser_fingerprint = formData.browser_fingerprint;
+	console.log(formData);
+
+	// console.log({
+	// 	mobile: md.mobile(),
+	// 	phone: md.phone(),
+	// 	tablet: md.tablet(),
+	// 	userAgent: md.userAgents(),
+	// 	os: md.os(),
+	// 	isPhone: md.is("iPhone"),
+	// 	version: md.version(),
+	// 	versionStr: md.versionStr(),
+	// 	match: md.match("playstation|xbox"),
+	// 	browser_fingerprint,
+	// });
+	// console.log({md});
+
+	const text = `Good Day ${voter_name}! \nThank You for partcipating in the contest by voting for your favorite contestant.`;
+
+	delete formData.browser_fingerprint;
+	var candidate_ids = Object.values(formData);
+	var poll_ids = Object.keys(formData)?.map((id) => id.split("/")[0]); // array of names of the poll
+	console.log({candidate_ids});
+
+	if (!candidate_ids?.length) {
+		req.flash("error", "Vote for at least one contestant");
+		return res.status(301).redirect("/voter/contest-center");
+	}
+
+	try {
+		// Update the total casted vote of the Voter
+		await Models.ContestVoterModel.findByIdAndUpdate(voter_id, {
+			vote: 1,
+		}).exec();
+		const contests = await Models.ContestModel.findById(contest_id);
+
+		if (contests.browser_fingerprint.includes(browser_fingerprint)) {
+			Models.ContestVoterModel.findByIdAndUpdate(voter_id, {
+				not_counted: true,
+			}).exec();
+
+			throw Error(
+				"This device has been used to vote already, a device can only be use once to vote in a contest"
+			);
 		}
-		upstate = "Update `contest_voter` Set `vote` = 1 Where `id` = ?";
-		db.query(upstate, [voter_id], (err, result) => {
-			if (err) throw err;
 
-			var mailOptions = {
-				from: "wedecideinfo@gmail.com",
-				to: voter_email,
-				subject: "WeDecide Login Details",
-				text: `Good Day ${voter_name}! \nThank You for partcipating in the contest by voting for your favorite contestant.`,
-			};
+		contests.browser_fingerprint.push(browser_fingerprint);
+		contests.voters.push(voter_id);
+		await contests.save();
 
-			transporter.sendMail(mailOptions, function (error, info) {
-				if (error) {
-					console.log(error);
-				} else {
-					console.log("Email sent: " + info.response);
-				}
-			});
-		});
-		res.cookie("contest_auth", null);
-		res.redirect("/voter/thank-you");
+		// Update contestant votes
+		await Models.ContestantModel.updateMany(
+			{_id: {$in: candidate_ids}},
+			{$inc: {vote: 1}}
+		).exec();
+
+		await Models.ContestantPollModel.updateMany(
+			{_id: {$in: poll_ids}},
+			{$inc: {vote: 1}}
+		).exec();
+
+		Emailer(voter_email, text);
+		res.clearCookie("contest_auth", {path: "/"});
+		return res.status(200).redirect("/voter/thank-you");
+	} catch (error) {
+		console.log({error});
+		req.flash("error", error?.message ?? "Internal Server Error");
+		res.clearCookie("contest_auth", {path: "/"});
+		return res.status(301).redirect("/voter/contest-vote");
 	}
 });
 

@@ -10,10 +10,7 @@ module.exports = function auth(req, res, next) {
 		req.id = verified;
 		next();
 	} catch (err) {
-		res.render("vote_election", {
-			error: "Access Denied!",
-			success: null,
-			formData: req.body,
-		});
+		req.flash("error", "Access Denied!");
+		res.redirect("/voter/vote-election");
 	}
 };
