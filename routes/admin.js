@@ -21,8 +21,6 @@ router.get("/", EnsureIsAutheticated, async (req, res, next) => {
 		const token = req.user;
 		const userdecode = jwt.decode(token, "secret-hack-admin");
 
-		console.log({userdecode, token});
-
 		const data = await Models.AdminModel.findById(userdecode._id, {
 			elections: 1,
 			contests: 1,
@@ -31,15 +29,12 @@ router.get("/", EnsureIsAutheticated, async (req, res, next) => {
 		}).populate("elections");
 
 		async.forEach(data.elections, (election) => {
-			console.log({election});
 			let editElection = {
 				...election._doc,
 				polls: election.polls.length ?? 0,
 			};
 			elections.push(editElection);
 		});
-
-		console.log({elections});
 
 		let result = {
 			name: data.name,
@@ -50,7 +45,6 @@ router.get("/", EnsureIsAutheticated, async (req, res, next) => {
 
 		return res.status(200).render("admin_dashboard", {result});
 	} catch (error) {
-		console.error({error});
 		return res.status(500).send(JSON.stringify(error, null, 3));
 	}
 });
@@ -100,8 +94,6 @@ router.post("/create-election", EnsureIsAutheticated, async (req, res) => {
 	const token = req.user;
 	const user_id = jwt.decode(token, "secret-hack-admin")._id;
 
-	console.log({user_id, name, esd, eed, rsd, red, desp});
-
 	if (!name || !esd || !eed || !rsd || !red || !desp) {
 		// if any of the field is missing this same page will be render
 		// with error
@@ -121,7 +113,6 @@ router.post("/create-election", EnsureIsAutheticated, async (req, res) => {
 				description: desp,
 			});
 
-			console.log({newElection});
 			await newElection.save();
 			await Models.AdminModel.findByIdAndUpdate(user_id, {
 				$push: {elections: newElection._id},
@@ -148,13 +139,7 @@ router.get("/manage-election", EnsureIsAutheticated, async (req, res) => {
 	const user_id = jwt.decode(token, "secret-hack-admin")._id;
 	const success = req.flash("success")[0];
 
-	console.log({session: req.session, session_id: req.sessionID, success});
-	// state1 = "SELECT * FROM `election` WHERE admin_id = ?";
-
 	try {
-		// db.query(state1, [user_id], (err, result) => {
-		// 	res.render("manage_election", {result});
-		// });
 		const elections = await Models.ElectionModel.find(
 			{
 				admin_id: mongoose.Types.ObjectId(user_id),
@@ -192,7 +177,6 @@ router.post("/create-contest", EnsureIsAutheticated, async (req, res) => {
 	const token = req.user;
 	const user_id = jwt.decode(token, "secret-hack-admin")._id;
 
-	console.log({user_id, name, esd, eed, desp});
 	if (!name || !esd || !eed || !desp) {
 		req.flash("error", "All fields are require");
 		return res.redirect("/admin/create-contest");
@@ -215,7 +199,6 @@ router.post("/create-contest", EnsureIsAutheticated, async (req, res) => {
 		req.flash("success", `${name} contest created successfully`);
 		return res.redirect("/admin/manage-contest");
 	} catch (error) {
-		console.error({error});
 		req.flash(
 			"error",
 			error?.keyValue?.name + " contest already exist" ??
@@ -234,8 +217,6 @@ router.get("/manage-contest", EnsureIsAutheticated, async (req, res) => {
 	const error = req.flash("error")[0];
 	const success = req.flash("success")[0];
 
-	console.log({error, success});
-
 	try {
 		const contests = await Models.ContestModel.find({
 			admin_id: mongoose.Types.ObjectId(user_id),
@@ -245,6 +226,7 @@ router.get("/manage-contest", EnsureIsAutheticated, async (req, res) => {
 		res.render("manage_contest", {result: contests, error, success});
 	} catch (err) {
 		console.log({...err});
+		return res.status(400).json(err);
 	}
 });
 
@@ -331,7 +313,6 @@ router.post("/contest/pay", EnsureIsAutheticated, async (req, res) => {
 			//handle errors
 			res.cookie("contestPaid", null);
 			res.cookie("electionPaid", null);
-			console.log(error);
 			return res.redirect("/admin/error");
 		}
 		response = JSON.parse(body);
@@ -352,7 +333,6 @@ router.get("/paystack/callback", EnsureIsAutheticated, async (req, res) => {
 			res.cookie("contestPaid", null);
 			res.cookie("electionPaid", null);
 			//handle errors appropriately
-			console.log(error);
 			return res.redirect("/admin/error");
 		}
 		response = JSON.parse(body);
@@ -528,8 +508,6 @@ router.get(
 				election_id
 			);
 
-			console.log(election);
-
 			await Models.PollModel.deleteMany({election_id}).exec();
 			await Models.CandidateModel.deleteMany({election_id}).exec();
 
@@ -538,7 +516,6 @@ router.get(
 			req.flash("success", `${election?.name} deleted successfully`);
 			res.redirect("/admin/manage-election");
 		} catch (error) {
-			console.log({...error});
 			req.flash("error", error.message ?? "Internal Server Error");
 			return res.status(400).redirect("/login");
 		}
@@ -586,8 +563,6 @@ router.get(
 			const candidate = await Models.CandidateModel.findByIdAndDelete(
 				id
 			).exec();
-
-			console.log({candidate});
 
 			req.flash("success", `${candidate?.name} removed successfully.`);
 			res.redirect(`/admin/election/${electionState}`);

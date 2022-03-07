@@ -11,14 +11,15 @@ const verifyElection = require("../config/validateElectionVote");
 const path = require("path");
 const Emailer = require("../mailer");
 const bcrypt = require("bcryptjs");
+const cloudinary = require("cloudinary");
 
 router.use(express.static("public"));
 
-// Datebase
-const db = require("../database/config");
-const {render} = require("ejs");
-const {promisify} = require("util");
-const {errorMonitor} = require("events");
+cloudinary.config({
+	cloud_name: "hodaviahtechnology",
+	api_key: process.env.cloudinary_key,
+	api_secret: process.env.cloudinary_secret,
+});
 
 //****************To Register to vote for an election */
 router.get("/register-election", async (req, res) => {
@@ -26,8 +27,6 @@ router.get("/register-election", async (req, res) => {
 	const success = req.flash("success")[0];
 	const error = req.flash("error")[0];
 	const formData = req.flash("formData")[0];
-
-	console.log({elections, success, error, formData});
 
 	res.render("vote_register", {
 		result: elections,
@@ -41,11 +40,11 @@ router.post("/register-election", async (req, res) => {
 	const form = formidable();
 	form.parse(req, async (err, fields, files) => {
 		try {
-			console.log({err, fields, files});
 			if (err) throw Error(err);
 
 			const {election, username, email, phone, password, image_name} =
 				fields;
+
 			if (
 				!election ||
 				!username ||
@@ -60,20 +59,11 @@ router.post("/register-election", async (req, res) => {
 				return res.redirect("/voter/register-election");
 			}
 
-			const electionDetail = election.split("/");
-			fs.access("./public/uploads", (error) => {
-				if (error) {
-					fs.mkdirSync("./public/uploads");
-				}
-			});
-
 			const voucher = `ev-${uuidv4()}`;
 			const timestamp = new Date().toISOString().replaceAll(/\W/g, "_");
 			const ref = username + "_" + timestamp + path.extname(image_name);
 
-			let upload_path = path.resolve("./public/uploads/" + "/" + ref);
-			const fsUpload = promisify(fs.rename);
-			await fsUpload(files["image"].filepath, upload_path);
+			const electionDetail = election.split("/");
 
 			const salt = bcrypt.genSaltSync(10);
 			const hash = bcrypt.hashSync(password, salt);
@@ -84,9 +74,18 @@ router.post("/register-election", async (req, res) => {
 				voucher,
 				phone,
 				election_id: electionDetail[0],
-				face_path: "/" + ref,
+				face_path: "",
 			});
 
+			await newVoter.save();
+
+			console.log({image: files["image"]});
+			const cloudResponse = await cloudinary.v2.uploader.upload(
+				files["image"].filepath,
+				{public_id: ref}
+			);
+
+			newVoter.face_path = cloudResponse.url;
 			await newVoter.save();
 
 			const text = `Good Day ${username}!. \nYou can now partcipate in the election: ${electionDetail[1]} by voting for your favorite candidate, Here is your details \nUsername: ${username} \nPassword: ${password} \nvouchar: ${voucher}`;
@@ -100,8 +99,6 @@ router.post("/register-election", async (req, res) => {
 			);
 			return res.redirect("/voter/vote-election");
 		} catch (error) {
-			console.log({error});
-
 			if (error.keyValue) {
 				req.flash(
 					"error",
@@ -184,8 +181,6 @@ router.post("/vote-election", async (req, res) => {
 router.get("/face-check", verifyElection, async (req, res) => {
 	const token = req.cookies.election_auth;
 	const votingElection = {...jwt.decode(token, "secret-hack-election")};
-
-	console.log({token, votingElection});
 	// const voters_username = jwt.decode(token).username;
 	// const election_id = jwt.decode(token).election_id;
 
@@ -254,9 +249,8 @@ router.post("/contest-register", async (req, res) => {
 		const text = `Good Day ${name}! \nYou can now partcipate in the contest: ${contest_name} by voting for your favorite contestant , Here is your vouchar \n${voucher}`;
 		const {error, response} = await Emailer(email, text);
 
-		if (error) return console.log(error);
+		if (error) return Error("Email not sent");
 
-		console.log("Email sent: " + response);
 		req.flash("success", "Your voucher has been sent to your email.");
 		res.redirect("/voter/contest-vote");
 	} catch (error) {
@@ -298,8 +292,6 @@ router.post("/contest-vote", async (req, res) => {
 		const contestVoter = await Models.ContestVoterModel.findOne({
 			voucher,
 		});
-
-		console.log({contestVoter});
 
 		if (!contestVoter)
 			throw Error(
@@ -466,10 +458,8 @@ router.post("/contest-center", verify, async (req, res) => {
 	// const MobileDetect = require("mobile-detect");
 	// const md = new MobileDetect(req.headers["user-agent"]);
 
-	console.log({voter_id, voter_name, voter_email, contest_id});
 	var formData = req.body;
 	var browser_fingerprint = formData.browser_fingerprint;
-	console.log(formData);
 
 	// console.log({
 	// 	mobile: md.mobile(),
@@ -483,14 +473,12 @@ router.post("/contest-center", verify, async (req, res) => {
 	// 	match: md.match("playstation|xbox"),
 	// 	browser_fingerprint,
 	// });
-	// console.log({md});
 
 	const text = `Good Day ${voter_name}! \nThank You for partcipating in the contest by voting for your favorite contestant.`;
 
 	delete formData.browser_fingerprint;
 	var candidate_ids = Object.values(formData);
 	var poll_ids = Object.keys(formData)?.map((id) => id.split("/")[0]); // array of names of the poll
-	console.log({candidate_ids});
 
 	if (!candidate_ids?.length) {
 		req.flash("error", "Vote for at least one contestant");
@@ -533,7 +521,6 @@ router.post("/contest-center", verify, async (req, res) => {
 		res.clearCookie("contest_auth", {path: "/"});
 		return res.status(200).redirect("/voter/thank-you");
 	} catch (error) {
-		console.log({error});
 		req.flash("error", error?.message ?? "Internal Server Error");
 		res.clearCookie("contest_auth", {path: "/"});
 		return res.status(301).redirect("/voter/contest-vote");

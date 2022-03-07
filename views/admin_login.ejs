@@ -32,7 +32,7 @@
               </div>
               <h4>Hello!</h4>
               <h6 class="font-weight-light">Sign in to create an election poll.</h6>
-              <form action="/admin" method="post" class="pt-3" onsubmit="submitform();">
+              <form action="/admin" method="post" class="pt-3">
                 <%- include("message") -%>
                   <div class="form-group">
                     <input required type="text" class="form-control form-control-lg" id="exampleInputEmail1"
@@ -63,7 +63,7 @@
   <!-- container-scroller -->
 
   <!-- Detecting if the page is reach by reloading -->
-  <script>
+  <!-- <script>
     const pageAccessedByReload = (
       (window.performance.navigation && window.performance.navigation.type === 1) ||
       window.performance
@@ -75,7 +75,7 @@
     console.info({ pageAccessedByReload })
 
     if (pageAccessedByReload) console.info({ element: document.querySelector(".error_message.error") });
-  </script>
+  </script> -->
   <!-- plugins:js -->
   <script src="vendors/js/vendor.bundle.base.js"></script>
   <!-- endinject -->
