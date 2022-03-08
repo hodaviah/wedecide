@@ -172,7 +172,7 @@ router.post("/vote-election", async (req, res) => {
 		);
 		return res
 			.cookie("election_auth", token, {
-				maxAge: 1 * 60 * 60 * 1000,
+				maxAge: 2 * 60 * 60 * 1000,
 				httpOnly: true,
 			})
 			.redirect("/voter/face-check");
@@ -317,7 +317,7 @@ router.post("/contest-vote", async (req, res) => {
 
 		return res
 			.cookie("contest_auth", token, {
-				maxAge: 1 * 60 * 60 * 1000,
+				maxAge: 2 * 60 * 60 * 1000,
 				httpOnly: true,
 			})
 			.redirect("/voter/contest-center");
@@ -420,7 +420,8 @@ router.post("/election-center", verifyElection, async (req, res) => {
 		return res.redirect("/voter/thank-you");
 	} catch (error) {
 		req.flash("error", error?.message ?? "Internal Server Error");
-		return res.status(301).redirect("/voter/election-center");
+		res.clearCookie("election_auth", {path: "/"});
+		return res.status(301).redirect("/voter/vote-election");
 	}
 });
 

@@ -121,10 +121,10 @@
       const [file] = imgInp.files
       if (file) {
         myImage1.src = URL.createObjectURL(file)
-        button.onclick = justWork()
+        button.onclick = justWork
         innerDiv.appendChild(button)
         container.appendChild(innerDiv)
-        container.appendChild(loadingDiv)
+
       }
     }
 
@@ -136,7 +136,7 @@
       } catch (error) {
         console.log(error)
       }
-
+      container.appendChild(loadingDiv)
       await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
       await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
       await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL)

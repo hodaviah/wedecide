@@ -48,9 +48,6 @@
                 <div class="card-body">
                   <%- include("message") -%>
                     <h4 class="card-title">
-                      <script>
-                        "<%- result -%>"
-                      </script>
                       <%= result.name %>
                     </h4>
                     <p class="card-description"></p>
@@ -115,7 +112,6 @@
         // This is the visitor identifier:
         const visitorId = result.visitorId
         document.getElementById("fingerprint").value = visitorId
-        console.log({ visitorId })
       })
   </script>
   <script src="voters/vendors/js/vendor.bundle.base.js"></script>

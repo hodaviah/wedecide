@@ -28,11 +28,12 @@
           <div class="col-lg-4 mx-auto">
             <div class="auth-form-light text-left py-5 px-4 px-sm-5">
 
-              <form action="/voter/contest-vote" method="POST" class="pt-3">
+              <form action="/voter/contest-vote" method="POST" class="pt-3" autocomplete="new-form">
                 <%- include("message") -%>
                   <div class="form-group">
                     <input required name="vouchar" value="<%= formData?.vouchar %>" type="text"
-                      class="form-control form-control-lg" id="exampleInputUsername1" placeholder="Vouchar" />
+                      class="form-control form-control-lg" id="exampleInputUsername1" placeholder="Vouchar"
+                      autocomplete="new-voucher" />
                   </div>
 
                   <div class="mt-3">
