@@ -172,7 +172,7 @@ router.post("/vote-election", async (req, res) => {
 		);
 		return res
 			.cookie("election_auth", token, {
-				maxAge: 60 * 60 * 1,
+				maxAge: 1 * 60 * 60 * 1000,
 				httpOnly: true,
 			})
 			.redirect("/voter/face-check");
@@ -317,7 +317,7 @@ router.post("/contest-vote", async (req, res) => {
 
 		return res
 			.cookie("contest_auth", token, {
-				maxAge: 60 * 60 * 24,
+				maxAge: 1 * 60 * 60 * 1000,
 				httpOnly: true,
 			})
 			.redirect("/voter/contest-center");
