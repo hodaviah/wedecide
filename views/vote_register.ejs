@@ -60,15 +60,14 @@
 
                   <div class="form-group">
                     <label>Upload Facial Photo</label>
-                    <input type="file" name="image" value="<%= formData?.file ?? "" %>" accept="image/*"
-                      capture="camera" class="file-upload-default">
                     <div class="input-group col-xs-12">
-                      <input required type="text" name="image_name" value="<%= formData?.image_name ?? "" %>"
-                        class="form-control file-upload-info" placeholder="Upload Image">
+                      <input required type="text" name="image_name" class="form-control file-upload-info"
+                        placeholder="Upload Image">
                       <span class="input-group-append">
                         <button class="file-upload-browse btn btn-primary" type="button">Upload</button>
                       </span>
                     </div>
+                    <input type="file" name="image" accept="image/*" capture="camera" class="file-upload-default">
                   </div>
 
                   <div class="mt-3">

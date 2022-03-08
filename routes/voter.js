@@ -55,7 +55,7 @@ router.post("/register-election", async (req, res) => {
 				!files["image"]
 			) {
 				req.flash("error", "All Fields Required"),
-					req.flash("formData", {...fields, file: files["image"]});
+					req.flash("formData", fields);
 				return res.redirect("/voter/register-election");
 			}
 

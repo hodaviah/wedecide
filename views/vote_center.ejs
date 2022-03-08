@@ -53,28 +53,32 @@
                     <p class="card-description"></p>
                     <form action="/voter/election-center" method="POST" class="forms-sample">
                       <% for( let index=0; index < result.polls.length; index++ ) { %>
-                        <div class="form-group">
-                          <label for="exampleInputName1">
-                            <%= result.polls[index].name %>
-                          </label>
-                          <% for( let index0=0; index0 < result.candidates.length; index0++ ) { %>
-                            <% if (String(result.polls[index]._id)===String(result.candidates[index0].poll_id)) { %>
+                        <% var pollHasCandidates=result.candidates.filter((candidate)=> String(candidate.poll_id) ===
+                          String(result.polls[index]._id));
+                          if(!pollHasCandidates?.length) continue
+                          %>
+                          <div class="form-group">
+                            <label for="exampleInputName1">
+                              <%= result.polls[index].name %>
+                            </label>
+                            <% pollHasCandidates.map((candidate)=>{ %>
                               <div class="form-check">
                                 <label class="form-check-label">
                                   <input type="radio" class="form-check-input"
                                     name="<%= result.polls[index]._id %>/<%= result.polls[index].name %>"
-                                    value="<%= result.candidates[index0]._id %>" />
-                                  <%= result.candidates[index0].name %>
+                                    value="<%= candidate._id %>" />
+                                  <%= candidate.name %>
                                 </label>
                               </div>
-                              <% } %>
-                                <% } %>
-                        </div>
-                        <% } %>
-                          <div class="form-group">
-                            <input type="hidden" name="browser_fingerprint" id="fingerprint" value="">
+                              <% }) %>
                           </div>
-                          <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                          <% } %>
+                            <div class="form-group">
+                              <input type="hidden" name="browser_fingerprint" id="fingerprint" value="">
+                            </div>
+                            <% if(result?.candidates?.length && result?.polls.length) { %>
+                              <button type="submit" class="btn btn-primary mr-2">Submit</button>
+                              <% } %>
                     </form>
                 </div>
               </div>
