@@ -48,6 +48,9 @@
                 <div class="card-body">
                   <%- include("message") -%>
                     <h4 class="card-title">
+                      <script>
+                        "<%- result -%>"
+                      </script>
                       <%= result.name %>
                     </h4>
                     <p class="card-description"></p>
@@ -63,9 +66,8 @@
                                 <label class="form-check-label">
                                   <input type="radio" class="form-check-input"
                                     name="<%= result.polls[index]._id %>/<%= result.polls[index].name %>"
-                                    value="<%= result.candidates[index0]._id %>">
+                                    value="<%= result.candidates[index0]._id %>" />
                                   <%= result.candidates[index0].name %>
-
                                 </label>
                               </div>
                               <% } %>
@@ -73,7 +75,7 @@
                         </div>
                         <% } %>
                           <div class="form-group">
-                            <input type="hidden" name="browser_fingerprint" value="">
+                            <input type="hidden" name="browser_fingerprint" id="fingerprint" value="">
                           </div>
                           <button type="submit" class="btn btn-primary mr-2">Submit</button>
                     </form>

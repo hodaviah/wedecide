@@ -170,7 +170,12 @@ router.post("/vote-election", async (req, res) => {
 			},
 			"secret-hack-election"
 		);
-		return res.cookie("election_auth", token).redirect("/voter/face-check");
+		return res
+			.cookie("election_auth", token, {
+				maxAge: 60 * 60 * 1,
+				httpOnly: true,
+			})
+			.redirect("/voter/face-check");
 	} catch (error) {
 		req.flash("error", error?.message);
 		req.flash("formData", req.body);
@@ -311,7 +316,10 @@ router.post("/contest-vote", async (req, res) => {
 		);
 
 		return res
-			.cookie("contest_auth", token)
+			.cookie("contest_auth", token, {
+				maxAge: 60 * 60 * 24,
+				httpOnly: true,
+			})
 			.redirect("/voter/contest-center");
 	} catch (error) {
 		req.flash("formData", req.body);
@@ -336,6 +344,8 @@ router.get("/election-center", verifyElection, async (req, res) => {
 	)
 		.populate("polls")
 		.populate("candidates");
+
+	console.log({electionDetail});
 
 	if (!electionDetail) {
 		res.clearCookie("election_auth", {path: "/"});
